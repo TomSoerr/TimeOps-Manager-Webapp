@@ -1,0 +1,23 @@
+{
+  "name": "timeops-manager-webapp",
+  "version": "1.0.0",
+  "author": "Tom Stöhrer",
+  "main": "src/app.ts",
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.20.1",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.1"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.2.0",
+    "tailwindcss": "^4.0.7",
+    "vite": "^6.1.1"
+  }
+}
