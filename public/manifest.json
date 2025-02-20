@@ -1,6 +1,9 @@
 {
   "short_name": "TimeOps",
   "name": "TimeOps Manager",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192x192.png",
@@ -13,8 +16,16 @@
       "type": "image/png"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
+  "screenshots": [
+    {
+      "src": "mobile-screenshot.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "start_url": "/",
+  "id": "/",
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
 }
