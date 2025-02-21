@@ -8,3 +8,13 @@
     "GRAD" 0,
     "opsz" 24;
 }
+
+@theme {
+  --animate-slide-up: slide-up 0.5s ease-in-out;
+
+  @keyframes slide-up {
+    0% {
+      transform: translateY(100%);
+    }
+  }
+}
