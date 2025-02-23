@@ -9,11 +9,20 @@
     "opsz" 24;
 }
 
+/* TODO: Add keyframe animation for backdrop of popover */
+
 @theme {
   --animate-slide-up: slide-up 0.5s ease-in-out;
+  --animate-slide-down: slide-down 0.5s ease-in-out;
 
   @keyframes slide-up {
     0% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes slide-down {
+    100% {
       transform: translateY(100%);
     }
   }
