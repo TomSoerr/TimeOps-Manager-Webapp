@@ -7,58 +7,78 @@ interface Props {
 }
 
 export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     tag: 'TimeOps Manager',
     color: 'lime',
+    date: new Date().toISOString().split('T')[0],
+    startTime: '09:00',
+    endTime: '17:00',
   });
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+    const popover = popoverRef.current;
+    if (!popover) return;
 
+    // Use popover API
     if (isOpen) {
-      dialog.showModal();
+      popover.showPopover();
     } else {
-      dialog.close();
+      popover.hidePopover();
     }
   }, [isOpen]);
 
   const close = () => {
-    onClose();
-    dialogRef.current?.close();
+    const popover = popoverRef.current;
+    // prevent further errors
+    if (!popover) return;
+    const modal = popover.children[0];
+    if (!modal) return;
+
+    // add animate backdrop class to popover
+    // fade backdrop in and out
+
+    modal.classList.remove('animate-slide-up');
+    modal.classList.add('animate-slide-down');
+
+    setTimeout(() => {
+      onClose();
+      if (popover?.hidePopover) {
+        popover.hidePopover();
+      }
+
+      modal.classList.remove('animate-slide-down');
+      modal.classList.add('animate-slide-up');
+    }, 500);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.table(formData);
+
     onClose();
   };
 
-  // fix autofocus
-
   return (
-    <dialog
-      ref={dialogRef}
-      className=" h-1/1 w-1/1 max-h-1/1 max-w-1/1 bg-transparent backdrop:bg-slate-900/30 [&:not([open])]:hidden overflow-hidden"
-      onClose={onClose}
-      autoFocus={false}
+    <div
+      ref={popoverRef}
+      popover="auto"
+      className=" h-1/1 w-1/1 max-h-1/1 max-w-1/1 bg-transparent backdrop:bg-slate-900/30 overflow-hidden"
     >
-      <div className="fixed block h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50  shadow-xl p-6 rounded-t-2xl animate-slide-up">
+      <div className="fixed h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50 shadow-xl p-6 rounded-t-2xl animate-slide-up">
         <h2 className="text-xl font-bold mb-4">Add New Entry</h2>
 
         <form
           onSubmit={handleSubmit}
           className="space-y-4"
         >
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Task Name
-            </label>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-slate-700"
+          >
+            <span>Task Name</span>
             <input
               type="text"
               id="name"
@@ -68,17 +88,14 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
               }
               className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               required
-              autoFocus={false}
             />
-          </div>
+          </label>
 
-          <div>
-            <label
-              htmlFor="tag"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Tag
-            </label>
+          <label
+            htmlFor="tag"
+            className="block text-sm font-medium text-slate-700"
+          >
+            <span>Tag</span>
             <input
               type="text"
               id="tag"
@@ -88,15 +105,13 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
               }
               className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
-          </div>
+          </label>
 
-          <div>
-            <label
-              htmlFor="date"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Date
-            </label>
+          <label
+            htmlFor="date"
+            className="block text-sm font-medium text-slate-700"
+          >
+            <span>Date</span>
             <input
               type="date"
               id="date"
@@ -107,16 +122,14 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
               className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               required
             />
-          </div>
+          </label>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="startTime"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Start Time
-              </label>
+            <label
+              htmlFor="startTime"
+              className="block text-sm font-medium text-slate-700"
+            >
+              <span>Start Time</span>
               <input
                 type="time"
                 id="startTime"
@@ -127,15 +140,13 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
-            </div>
+            </label>
 
-            <div>
-              <label
-                htmlFor="endTime"
-                className="block text-sm font-medium text-slate-700"
-              >
-                End Time
-              </label>
+            <label
+              htmlFor="endTime"
+              className="block text-sm font-medium text-slate-700"
+            >
+              <span>End Time</span>
               <input
                 type="time"
                 id="endTime"
@@ -146,16 +157,14 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
                 className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
-            </div>
+            </label>
           </div>
 
-          <div>
-            <label
-              htmlFor="color"
-              className="block text-sm font-medium text-slate-700"
-            >
-              Color
-            </label>
+          <label
+            htmlFor="color"
+            className="block text-sm font-medium text-slate-700"
+          >
+            <span>Color</span>
             <select
               id="color"
               value={formData.color}
@@ -173,17 +182,24 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
               <option value="violet">Violet</option>
               <option value="fuchsia">Fuchsia</option>
             </select>
-          </div>
+          </label>
+
+          <button
+            type="submit"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
+          >
+            <span>Add Entry</span>
+          </button>
         </form>
 
         <div className="absolute top-4 right-4">
           <Icon
             name="close"
             onClick={close}
-            className="!text-4 xl"
+            className="!text-4xl"
           />
         </div>
       </div>
-    </dialog>
+    </div>
   );
 };
