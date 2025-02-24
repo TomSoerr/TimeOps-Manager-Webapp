@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../components/common/Icon';
+import { Input } from '../components/common/Input';
 
 interface Props {
   isOpen: boolean;
@@ -8,13 +9,21 @@ interface Props {
 
 export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const formatTime = (date: Date): string => {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const now = new Date();
+  const twoHoursAgo = new Date(now.getTime() - 7200000);
+
   const [formData, setFormData] = useState({
     name: '',
-    tag: 'TimeOps Manager',
     color: 'lime',
-    date: new Date().toISOString().split('T')[0],
-    startTime: '09:00',
-    endTime: '17:00',
+    date: now.toISOString().split('T')[0],
+    startTime: formatTime(twoHoursAgo),
+    endTime: formatTime(now),
+    tag: 'No Project',
   });
 
   useEffect(() => {
@@ -36,11 +45,10 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
     const modal = popover.children[0];
     if (!modal) return;
 
-    // add animate backdrop class to popover
-    // fade backdrop in and out
-
     modal.classList.remove('animate-slide-up');
     modal.classList.add('animate-slide-down');
+    popover.classList.remove('animate-backdrop-in');
+    popover.classList.add('animate-backdrop-out');
 
     setTimeout(() => {
       onClose();
@@ -50,7 +58,9 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
 
       modal.classList.remove('animate-slide-down');
       modal.classList.add('animate-slide-up');
-    }, 500);
+      popover.classList.remove('animate-backdrop-out');
+      popover.classList.add('animate-backdrop-in');
+    }, 501);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,122 +75,70 @@ export const Modal: React.FC<Props> = ({ isOpen, onClose }) => {
     <div
       ref={popoverRef}
       popover="auto"
-      className=" h-1/1 w-1/1 max-h-1/1 max-w-1/1 bg-transparent backdrop:bg-slate-900/30 overflow-hidden"
+      className=" h-1/1 w-1/1 max-h-1/1 max-w-1/1 bg-transparent backdrop:bg-slate-900/30 overflow-hidden animate-backdrop-in"
     >
-      <div className="fixed h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50 shadow-xl p-6 rounded-t-2xl animate-slide-up">
-        <h2 className="text-xl font-bold mb-4">Add New Entry</h2>
+      <div className="fixed h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50 shadow-xl py-6 px-4 rounded-t-2xl animate-slide-up">
+        <h2 className="text-xl font-bold mb-4 text-slate-800">Add New Entry</h2>
 
         <form
           onSubmit={handleSubmit}
           className="space-y-4"
         >
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-slate-700"
-          >
-            <span>Task Name</span>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
+          <Input
+            id="name"
+            label="Task Name"
+            value={formData.name}
+            type="text"
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+
+          <Input
+            id="date"
+            label="Date"
+            type="date"
+            max="2025-02-24"
+            min="2025-02-20"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              id="startTime"
+              label="Start Time"
+              type="time"
+              value={formData.startTime}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, startTime: e.target.value })
               }
-              className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
             />
-          </label>
+
+            <Input
+              id="endTime"
+              label="End Time"
+              type="time"
+              value={formData.endTime}
+              onChange={(e) =>
+                setFormData({ ...formData, endTime: e.target.value })
+              }
+            />
+          </div>
 
           <label
             htmlFor="tag"
             className="block text-sm font-medium text-slate-700"
           >
             <span>Tag</span>
-            <input
-              type="text"
+            <select
               id="tag"
               value={formData.tag}
               onChange={(e) =>
                 setFormData({ ...formData, tag: e.target.value })
               }
               className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </label>
-
-          <label
-            htmlFor="date"
-            className="block text-sm font-medium text-slate-700"
-          >
-            <span>Date</span>
-            <input
-              type="date"
-              id="date"
-              value={formData.date}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
-              className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            />
-          </label>
-
-          <div className="grid grid-cols-2 gap-4">
-            <label
-              htmlFor="startTime"
-              className="block text-sm font-medium text-slate-700"
             >
-              <span>Start Time</span>
-              <input
-                type="time"
-                id="startTime"
-                value={formData.startTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, startTime: e.target.value })
-                }
-                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
-              />
-            </label>
-
-            <label
-              htmlFor="endTime"
-              className="block text-sm font-medium text-slate-700"
-            >
-              <span>End Time</span>
-              <input
-                type="time"
-                id="endTime"
-                value={formData.endTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, endTime: e.target.value })
-                }
-                className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required
-              />
-            </label>
-          </div>
-
-          <label
-            htmlFor="color"
-            className="block text-sm font-medium text-slate-700"
-          >
-            <span>Color</span>
-            <select
-              id="color"
-              value={formData.color}
-              onChange={(e) =>
-                setFormData({ ...formData, color: e.target.value })
-              }
-              className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="lime">Lime</option>
-              <option value="amber">Amber</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="emerald">Emerald</option>
-              <option value="cyan">Cyan</option>
-              <option value="violet">Violet</option>
-              <option value="fuchsia">Fuchsia</option>
+              <option value="No Project">No Project</option>
+              <option value="TimeOps Manager">TimeOps Manager</option>
             </select>
           </label>
 
