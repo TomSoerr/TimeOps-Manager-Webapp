@@ -80,9 +80,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     https: {
-      key: fs.readFileSync('./pc.fritz.box.key'),
-      cert: fs.readFileSync('./pc.fritz.box.crt'),
+      key: fs.readFileSync('./ip.key'),
+      cert: fs.readFileSync('./ip.crt'),
     },
-    allowedHosts: ['pc.fritz.box', 'localhost'],
   },
 });
