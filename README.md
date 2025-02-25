@@ -29,20 +29,18 @@ dhcp=true
 ## HTTPS
 
 ```sh
-# Generate private key
-openssl genrsa -out ip.key 2048
+# Create cert inside project folder
+mkcert -install
+mkcert 192.168.178.43
 
-# Generate CSR with IP only
-openssl req -new -key ip.key -out ip.csr \
-  -subj "/CN=192.168.178.43" \
-  -addext "subjectAltName=IP:192.168.178.43,IP:127.0.0.1"
+# Folder where rootCA.pem is
+mkcert -CAROOT
 
-# Generate certificate
-openssl x509 -req -days 365 \
-  -in ip.csr \
-  -signkey ip.key \
-  -out ip.crt \
-  -extfile <(printf "subjectAltName=IP:192.168.178.43,IP:127.0.0.1")
+# Convert to CRT for Android and Windows
+openssl x509 -in "rootCA.pem" -out rootCA.crt
+
+# Add cert on Windows (run as Admin)
+certutil -addstore -f "ROOT" "rootCA.pem"
 
 # List current port proxy
 netsh interface portproxy show all

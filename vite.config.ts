@@ -25,20 +25,18 @@ export default defineConfig({
         short_name: 'TimeOps',
         description: 'Time Management Application',
         theme_color: '#615fff',
+        background_color: '#fcf9fa',
         orientation: 'portrait',
-        display: 'fullscreen',
         handle_links: 'preferred',
         categories: ['productivity'],
-        display_override: [
-          'fullscreen',
-          'window-controls-overlay',
-          'standalone',
-        ],
+        display: 'standalone',
+        display_override: ['standalone', 'window-controls-overlay'],
         launch_handler: {
           client_mode: ['navigate-existing', 'auto'],
         },
         start_url: '/',
         id: '/',
+        scope: '/',
         screenshots: [
           {
             src: 'mobile-screenshot.png',
@@ -63,12 +61,14 @@ export default defineConfig({
             src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable',
+            purpose: 'maskable',
           },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        cleanupOutdatedCaches: true, // Add this
+        runtimeCaching: [],
       },
     }),
   ],
@@ -77,11 +77,29 @@ export default defineConfig({
   },
   base: '/',
   server: {
-    host: '0.0.0.0',
+    host: true,
+    port: 5173,
+
+    https: {
+      key: fs.readFileSync('192.168.178.43-key.pem'),
+      cert: fs.readFileSync('192.168.178.43.pem'),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    manifest: true,
+    rollupOptions: {
+      input: {
+        main: '/index.html',
+      },
+    },
+  },
+  preview: {
+    host: true,
     port: 5173,
     https: {
-      key: fs.readFileSync('./ip.key'),
-      cert: fs.readFileSync('./ip.crt'),
+      key: fs.readFileSync('192.168.178.43-key.pem'),
+      cert: fs.readFileSync('192.168.178.43.pem'),
     },
   },
 });
