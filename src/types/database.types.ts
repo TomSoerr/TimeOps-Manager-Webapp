@@ -1,11 +1,11 @@
 import Color from '../types/color.types';
 
 export default interface DatabaseEntry {
-  'id': number;
-  'name': string;
-  'synced': boolean;
-  'tag': string;
-  'color': Color['color'];
-  'start-time-utc': number;
-  'end-time-utc': number;
+  id: number;
+  name: string;
+  synced: boolean;
+  tagName: string;
+  tagColor: Color['color'];
+  startTimeUtc: number;
+  endTimeUtc: number;
 }

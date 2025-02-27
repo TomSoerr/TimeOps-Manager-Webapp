@@ -7,5 +7,6 @@ export default interface Color {
     | 'cyan'
     | 'blue'
     | 'violet'
-    | 'fuchsia';
+    | 'fuchsia'
+    | 'slate';
 }
