@@ -25,7 +25,7 @@ export const Entry: React.FC<Props> = ({
   return (
     <Card onClick={onClick}>
       <div className="flex">
-        <div className="">
+        <div className="text-left">
           <h3 className="text-lg font-bold text-slate-800">{name}</h3>
 
           <p className="font-bold font-mono text-slate-700 text-base">{time}</p>

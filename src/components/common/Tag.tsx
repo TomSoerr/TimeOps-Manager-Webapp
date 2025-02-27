@@ -64,6 +64,12 @@ const Pill: React.FC<Pill> = ({ color, children }) => {
           {children}
         </div>
       );
+    case 'slate':
+      return (
+        <div className="*:bg-slate-50 *:border-slate-500 **:text-slate-900">
+          {children}
+        </div>
+      );
     default:
       return (
         <div className="*:bg-gray-50 *:border-gray-500 **:text-gray-900">

@@ -94,12 +94,4 @@ export default defineConfig({
       },
     },
   },
-  preview: {
-    host: true,
-    port: 5173,
-    https: {
-      key: fs.readFileSync('192.168.178.43-key.pem'),
-      cert: fs.readFileSync('192.168.178.43.pem'),
-    },
-  },
 });
