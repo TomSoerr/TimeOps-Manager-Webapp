@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../components/common/Icon';
 import { Input } from '../components/common/Input';
-import { offset } from '../utils/time';
-import Color from '../types/color.types';
+import { Button } from '../components/common/Button';
 
 interface Props {
   formData: undefined | FormData;
   setFormData: (data: FormData) => void;
+  onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
+  tags: string[];
 }
 
 export interface FormData {
+  id?: number;
   name: string;
   date: string;
   startTime: string;
@@ -18,7 +20,13 @@ export interface FormData {
   tag: string;
 }
 
-export const Modal: React.FC<Props> = ({ formData, setFormData, onClose }) => {
+export const Modal: React.FC<Props> = ({
+  formData,
+  setFormData,
+  onSubmit,
+  onClose,
+  tags,
+}) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,19 +68,11 @@ export const Modal: React.FC<Props> = ({ formData, setFormData, onClose }) => {
     }, 501);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    console.table(formData);
-
-    onClose();
-  };
-
   let form: React.ReactElement;
   if (formData !== undefined) {
     form = (
       <form
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit}
         className="space-y-4"
       >
         <Input
@@ -87,7 +87,7 @@ export const Modal: React.FC<Props> = ({ formData, setFormData, onClose }) => {
           id="date"
           label="Date"
           type="date"
-          min="2025-02-20"
+          min="2000-01-01"
           value={formData.date}
           onChange={(e) => setFormData({ ...formData, date: e.target.value })}
         />
@@ -125,17 +125,24 @@ export const Modal: React.FC<Props> = ({ formData, setFormData, onClose }) => {
             onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            <option value="No Project">No Project</option>
-            <option value="TimeOps Manager">TimeOps Manager</option>
+            {tags.map((tag: string) => {
+              return (
+                <option
+                  key={tag}
+                  value={tag}
+                >
+                  {tag}
+                </option>
+              );
+            })}
           </select>
         </label>
 
-        <button
+        <Button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
-        >
-          <span>Add Entry</span>
-        </button>
+          text="Add Entry"
+          uiType="primary"
+        />
       </form>
     );
   } else {

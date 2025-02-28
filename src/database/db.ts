@@ -3,13 +3,13 @@ import Color from '../types/color.types';
 import DatabaseEntry from '../types/database.types';
 
 // Define interfaces for the tables
-interface Tag {
+export interface Tag {
   id?: number;
   name: string;
   color: Color['color'];
 }
 
-interface Entry {
+export interface Entry {
   id?: number;
   name: string;
   synced: boolean;
@@ -31,16 +31,27 @@ export class TimeOpsDB extends Dexie {
     });
   }
 
-  async getEntryWithTag(id: number): Promise<DatabaseEntry | null> {
-    const entry = await this.entries.get(id);
-    if (!entry) return null;
-
-    const tag = await this.tags.get(entry.tagId);
-    return { ...entry, tag };
+  async getAllTag(): Promise<string[]> {
+    const tags = await this.tags.toArray();
+    return tags.map((tag) => tag.name);
   }
 
-  async getAllTag(): Promise<string[] | null> {
-    return null;
+  async setEntry(entry: DatabaseEntry): Promise<void> {
+    // Find the tag id based on the tag name
+    const tag = await this.tags.where('name').equals(entry.tagName).first();
+
+    if (!tag) {
+      throw new Error(`Tag with name ${entry.tagName} not found`);
+    }
+
+    // Update the entry
+    await this.entries.update(entry.id, {
+      name: entry.name,
+      startTimeUtc: entry.startTimeUtc,
+      endTimeUtc: entry.endTimeUtc,
+      tagId: tag.id,
+      synced: entry.synced,
+    });
   }
 
   async getAllEntriesWithTags(): Promise<DatabaseEntry[]> {

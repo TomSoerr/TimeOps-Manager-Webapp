@@ -28,7 +28,7 @@ export const calculateWeekHours = (entries: DatabaseEntry[]) => {
   return `${hours}:${minutes.toString().padStart(2, '0')}`;
 };
 
-const formatTime = (date: Date): string => {
+export const formatTime = (date: Date): string => {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 };
 
@@ -40,4 +40,16 @@ export const epochToHHMM = (epoch: number): string => {
 export const epochToYYMMDD = (epoch: number): string => {
   const date = new Date(epoch * 1000);
   return date.toISOString().split('T')[0];
+};
+
+export const dateToEpoch = (date: string, time: string): number => {
+  const [year, month, day] = date.split('-');
+  const [hours, minutes] = time.split(':');
+  const jsDate = new Date();
+  jsDate.setFullYear(+year);
+  jsDate.setMonth(+month - 1);
+  jsDate.setDate(+day);
+  jsDate.setHours(+hours);
+  jsDate.setMinutes(+minutes);
+  return Math.floor(jsDate.getTime() / 1000);
 };

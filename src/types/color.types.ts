@@ -1,5 +1,6 @@
 export default interface Color {
   color:
+    | 'slate' // default value for "No Project", don't remove
     | 'red'
     | 'amber'
     | 'lime'
@@ -7,6 +8,5 @@ export default interface Color {
     | 'cyan'
     | 'blue'
     | 'violet'
-    | 'fuchsia'
-    | 'slate';
+    | 'fuchsia';
 }

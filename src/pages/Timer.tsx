@@ -12,23 +12,28 @@ import {
   interval,
   epochToHHMM,
   epochToYYMMDD,
+  formatTime,
+  dateToEpoch,
 } from '../utils/time.ts';
 import { groupEntriesByInterval } from '../utils/groupEntries.ts';
 import { FormData } from './Modal';
+import Color from '../types/color.types.ts';
 
 const Timer: React.FC = () => {
   const [entries, setEntries] = useState<DatabaseEntry[]>([]);
-  const [tags, setTags] = useState<DatabaseEntry[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
   const handleAddClick = () => {
+    const now = new Date();
+    const twoHoursAgo = new Date(Date.now() - 7200000);
     const emptyForm: FormData = {
       name: '',
-      date: new Date().toISOString().split('T')[0],
-      startTime: 'string',
-      endTime: 'string',
-      tag: 'No Project',
+      date: twoHoursAgo.toISOString().split('T')[0],
+      startTime: formatTime(twoHoursAgo),
+      endTime: formatTime(now),
+      tag: tags[0],
     };
 
     setFormData(emptyForm);
@@ -49,10 +54,10 @@ const Timer: React.FC = () => {
   const loadTags = async () => {
     setIsLoading(true);
     try {
-      const entriesWithTags = await db.getAllEntriesWithTags();
-      setEntries(entriesWithTags);
+      const tags = await db.getAllTag();
+      setTags(tags);
     } catch (error) {
-      console.error('Failed to load entries:', error);
+      console.error('Failed to load tags:', error);
     } finally {
       setIsLoading(false);
     }
@@ -63,12 +68,11 @@ const Timer: React.FC = () => {
     loadTags();
   }, []);
 
-  const handleCloseClick = () => {
-    setFormData(undefined);
-  };
+  const handleCloseClick = () => {};
 
   const handleEditClick = (entry: DatabaseEntry) => {
     setFormData({
+      id: entry.id,
       name: entry.name,
       tag: entry.tagName,
       startTime: epochToHHMM(entry.startTimeUtc),
@@ -77,13 +81,34 @@ const Timer: React.FC = () => {
     });
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData === undefined) throw Error('Trying to submit empty form');
+
+    const newEntry: DatabaseEntry = {
+      id: formData?.id || undefined,
+      name: formData.name,
+      tagName: formData.tag,
+      tagColor: 'slate', // arbitrary value, not needed
+      synced: false,
+      startTimeUtc: dateToEpoch(formData.date, formData.startTime),
+      endTimeUtc: dateToEpoch(formData.date, formData.endTime), // Fixed: using endTime instead of startTime
+    };
+
+    try {
+      await db.setEntry(newEntry);
+      setFormData(undefined);
+      await loadEntries();
+    } catch (error) {
+      console.error('Failed to submit entry:', error);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-4">Loading...</div>;
   }
 
   const weekGroups = groupEntriesByInterval(entries, start, interval);
-
-  console.log(weekGroups);
 
   return (
     <>
@@ -108,6 +133,8 @@ const Timer: React.FC = () => {
         onClose={handleCloseClick}
         formData={formData}
         setFormData={setFormData}
+        tags={tags}
+        onSubmit={handleSubmit}
       />
     </>
   );
