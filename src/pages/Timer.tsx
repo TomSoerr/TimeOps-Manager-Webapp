@@ -9,15 +9,19 @@ import { db } from '../database/db';
 import {
   calculateWeekHours,
   start,
-  interval,
+  SECONDS_PER_DAY,
   epochToHHMM,
   epochToYYMMDD,
   formatTime,
   dateToEpoch,
+  SECONDS_PER_WEEK,
+  Weekday,
 } from '../utils/time.ts';
-import { groupEntriesByInterval } from '../utils/groupEntries.ts';
+import {
+  groupEntriesByInterval,
+  GroupedEntries,
+} from '../utils/groupEntries.ts';
 import { FormData } from './Modal';
-import Color from '../types/color.types.ts';
 
 const Timer: React.FC = () => {
   const [entries, setEntries] = useState<DatabaseEntry[]>([]);
@@ -108,21 +112,54 @@ const Timer: React.FC = () => {
     return <div className="p-4">Loading...</div>;
   }
 
-  const weekGroups = groupEntriesByInterval(entries, start, interval);
+  console.error(start);
+
+  const weekGroups = groupEntriesByInterval(
+    entries,
+    start,
+    SECONDS_PER_WEEK,
+    SECONDS_PER_DAY,
+  );
+
+  type WeekEntry = GroupedEntries[number];
+  type DayGroups = WeekEntry[1];
+  type DayGroup = DayGroups[number];
+
+  const weekGroupsEntries = Object.entries(weekGroups) as Array<
+    [string, WeekEntry]
+  >;
 
   return (
     <>
-      {Object.entries(weekGroups).map(([groupIndex, groupEntries]) => (
-        <Section
-          key={groupIndex}
-          headline={`Week ${-Number(groupIndex) + 1}`}
-          hours={calculateWeekHours(groupEntries)}
-        >
-          {groupEntries.map((entry: DatabaseEntry) =>
-            createEntry(entry, () => handleEditClick(entry)),
-          )}
-        </Section>
-      ))}
+      {weekGroupsEntries.map(([weekIndex, [weekTimestamp, dayGroups]]) => {
+        const dayGroupArray = Object.values(dayGroups);
+
+        const weekEntries = dayGroupArray.flatMap(
+          ([_, dayEntries]) => dayEntries,
+        );
+
+        return (
+          <Section
+            key={weekIndex}
+            headline={`Week from ${new Date(weekTimestamp * 1000).toISOString().split('T')[0]}`}
+            hours={calculateWeekHours(weekEntries)}
+          >
+            {Object.entries(dayGroups).map(
+              ([dayIndex, [dayTimestamp, entries]]) => (
+                <Section
+                  key={dayIndex}
+                  headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}.`}
+                  hours={calculateWeekHours(entries)}
+                >
+                  {entries.map((entry) =>
+                    createEntry(entry, () => handleEditClick(entry)),
+                  )}
+                </Section>
+              ),
+            )}
+          </Section>
+        );
+      })}
 
       <div className="fixed bottom-24 right-4 flex gap-2">
         <FabAdd onClick={handleAddClick} />

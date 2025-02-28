@@ -25,6 +25,7 @@ const Settings: React.FC = () => {
   };
 
   const handleDeleteClick = async () => {
+    console.warn('delete triggered');
     if (
       window.confirm(
         'Are you sure you want to delete all database entries? This cannot be undone.',
