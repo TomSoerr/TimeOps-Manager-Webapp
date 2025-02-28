@@ -141,14 +141,15 @@ const Timer: React.FC = () => {
         return (
           <Section
             key={weekIndex}
-            headline={`Week from ${new Date(weekTimestamp * 1000).toISOString().split('T')[0]}`}
+            headline={`Week from ${new Date(weekTimestamp * 1000).toLocaleDateString()}`}
             hours={calculateWeekHours(weekEntries)}
           >
             {Object.entries(dayGroups).map(
               ([dayIndex, [dayTimestamp, entries]]) => (
                 <Section
+                  subSection={true}
                   key={dayIndex}
-                  headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}.`}
+                  headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
                   hours={calculateWeekHours(entries)}
                 >
                   {entries.map((entry) =>

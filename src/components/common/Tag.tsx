@@ -83,7 +83,7 @@ export const Tag: React.FC<Props> = ({ name, color }) => {
   return (
     <Pill color={color}>
       <div className="py-0.5 px-2 rounded-full border-1 w-fit">
-        <p className="text-xs">{name}</p>
+        <p className="text-xs text-nowrap">{name}</p>
       </div>
     </Pill>
   );
