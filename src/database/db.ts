@@ -44,14 +44,30 @@ export class TimeOpsDB extends Dexie {
       throw new Error(`Tag with name ${entry.tagName} not found`);
     }
 
-    // Update the entry
-    await this.entries.update(entry.id, {
-      name: entry.name,
-      startTimeUtc: entry.startTimeUtc,
-      endTimeUtc: entry.endTimeUtc,
-      tagId: tag.id,
-      synced: entry.synced,
-    });
+    if (!tag?.id) {
+      throw new Error(`Tag id with name ${entry.tagName} not found`);
+    }
+
+    // create new entry if id is undefined
+
+    if (entry.id === undefined) {
+      await this.entries.add({
+        name: entry.name,
+        startTimeUtc: entry.startTimeUtc,
+        endTimeUtc: entry.endTimeUtc,
+        tagId: tag.id,
+        synced: entry.synced,
+      });
+    } else {
+      // Update the existing entry
+      await this.entries.update(entry.id, {
+        name: entry.name,
+        startTimeUtc: entry.startTimeUtc,
+        endTimeUtc: entry.endTimeUtc,
+        tagId: tag.id,
+        synced: entry.synced,
+      });
+    }
   }
 
   async getAllEntriesWithTags(): Promise<DatabaseEntry[]> {

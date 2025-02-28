@@ -6,9 +6,9 @@ import Color from '../../types/color.types';
 interface Props {
   name: string;
   synced: boolean;
-  id: number;
   tag: string;
   time: string;
+  timespan: string;
   color: Color['color'];
   onClick: () => void;
 }
@@ -18,17 +18,22 @@ export const Entry: React.FC<Props> = ({
   synced,
   tag,
   time,
-  id,
   color,
   onClick,
+  timespan,
 }) => {
   return (
     <Card onClick={onClick}>
       <div className="flex">
         <div className="text-left">
-          <h3 className="text-lg font-bold text-slate-800">{name}</h3>
+          <h4 className="text-base font-bold text-slate-800">{name}</h4>
 
-          <p className="font-bold font-mono text-slate-700 text-base">{time}</p>
+          <p className="font-bold  text-slate-700 text-sm">
+            {time} hrs{' '}
+            <span className="font-normal  text-slate-400 text-sm">
+              {timespan}
+            </span>
+          </p>
         </div>
         <div className="flex flex-col ml-auto justify-between items-end">
           <Tag

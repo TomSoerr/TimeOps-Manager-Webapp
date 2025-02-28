@@ -66,9 +66,25 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        cleanupOutdatedCaches: true, // Add this
-        runtimeCaching: [],
+        maximumFileSizeToCacheInBytes: 6000000,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        cleanupOutdatedCaches: true,
+        // runtimeCaching: [
+        //   {
+        //     urlPattern: /\.(?:woff2)$/i,
+        //     handler: 'CacheFirst',
+        //     options: {
+        //       cacheName: 'font-cache',
+        //       expiration: {
+        //         maxEntries: 10,
+        //         maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        //       },
+        //       cacheableResponse: {
+        //         statuses: [0, 200],
+        //       },
+        //     },
+        //   },
+        // ],
       },
     }),
   ],
