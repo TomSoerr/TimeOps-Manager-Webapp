@@ -12,6 +12,7 @@ export const Button: React.FC<Props> = ({ type, onClick, uiType, text }) => {
     <button
       type={type}
       className="px-4 text-nowrap py-1.5 text-sm font-medium    rounded-sm"
+      onClick={onClick}
     >
       <span>{text}</span>
     </button>

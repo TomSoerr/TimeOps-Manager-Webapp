@@ -1,9 +1,9 @@
 import DatabaseEntry from '../types/database.types';
 
 // Constants for time calculations
-const SECONDS_PER_DAY = 86400; // 24 * 60 * 60
-const DAYS_SINCE_EPOCH_TO_MONDAY = 3; // Thu->Mon = 3 days
-export const interval = 7 * SECONDS_PER_DAY; // one week
+export const SECONDS_PER_DAY = 86400; // 24 * 60 * 60
+const DAYS_SINCE_EPOCH_TO_MONDAY = 4; // Thu->Mon = - 4 days
+export const SECONDS_PER_WEEK = 7 * SECONDS_PER_DAY; // one week
 
 // time zone offset in unix epoch seconds
 export const offset = new Date().getTimezoneOffset() * 60;
@@ -14,7 +14,7 @@ const now = Math.floor(Date.now() / 1000);
 // last monday in current time zone in unix epoch seconds
 export const start =
   now -
-  (now % interval) -
+  (now % SECONDS_PER_DAY) -
   DAYS_SINCE_EPOCH_TO_MONDAY * SECONDS_PER_DAY +
   offset;
 
@@ -52,4 +52,14 @@ export const dateToEpoch = (date: string, time: string): number => {
   jsDate.setHours(+hours);
   jsDate.setMinutes(+minutes);
   return Math.floor(jsDate.getTime() / 1000);
+};
+
+export const Weekday = {
+  0: 'Sunday',
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
 };
