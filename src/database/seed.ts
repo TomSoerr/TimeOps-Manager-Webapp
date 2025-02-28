@@ -9,6 +9,7 @@ export async function isDatabaseEmpty(): Promise<boolean> {
 export async function seedDatabase(): Promise<void> {
   // Initial tags
   const initialTags: Tag[] = [
+    // "No Project" is need as default value, don't remove
     { name: 'No Project', color: 'slate' },
     { name: 'TimeOps Manager', color: 'amber' },
     { name: 'SICP JS', color: 'lime' },
