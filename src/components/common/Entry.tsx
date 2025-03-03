@@ -1,7 +1,7 @@
-import React from 'react';
-import { Card } from '../layout/Card';
-import { Tag } from './Tag';
-import Color from '../../types/color.types';
+import React from "react";
+import { Card } from "../layout/Card";
+import { Tag } from "./Tag";
+import Color from "../../types/color.types";
 
 interface Props {
   name: string;
@@ -9,7 +9,7 @@ interface Props {
   tag: string;
   time: string;
   timespan: string;
-  color: Color['color'];
+  color: Color["color"];
   onClick: () => void;
 }
 
@@ -26,22 +26,21 @@ export const Entry: React.FC<Props> = ({
     <Card onClick={onClick}>
       <div className="flex">
         <div className="text-left">
-          <h4 className="text-base font-bold text-slate-800">{name}</h4>
+          <h4 className="text-base leading-5 font-bold text-slate-800 mb-1">
+            {name}
+          </h4>
 
           <p className="font-bold  text-slate-700 text-sm">
-            {time} hrs{' '}
+            {time} hrs{" "}
             <span className="font-normal  text-slate-400 text-sm">
               {timespan}
             </span>
           </p>
         </div>
         <div className="flex flex-col ml-auto justify-between items-end">
-          <Tag
-            name={tag}
-            color={color}
-          />
+          <Tag name={tag} color={color} />
           <p className="text-xs mr-1 text-slate-400">
-            {synced ? 'synced' : 'offline'}
+            {synced ? "synced" : "offline"}
           </p>
         </div>
       </div>
