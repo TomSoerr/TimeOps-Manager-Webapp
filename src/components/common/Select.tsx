@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
 interface Props {
   label: string;
   id: string;
   onChange: (e: any) => void;
-  value: string;
+  value?: string;
   options: string[];
 }
 
@@ -31,7 +31,10 @@ export const Select: React.FC<Props> = ({
       >
         {options.map((value: string) => {
           return (
-            <option key={value} value={value}>
+            <option
+              key={value}
+              value={value}
+            >
               {value}
             </option>
           );

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Section } from "../components/layout/Section";
-import { FabAdd } from "../components/common/FabAdd";
-import { FabStart } from "../components/common/FabStart";
-import { createEntry } from "../utils/entryToCard.tsx";
-import DatabaseEntry from "../types/database.types";
-import { Modal } from "./Modal";
-import { db } from "../database/db";
+import React, { useState, useEffect } from 'react';
+import { Section } from '../components/layout/Section';
+import { FabAdd } from '../components/common/FabAdd';
+import { FabStart } from '../components/common/FabStart';
+import { createEntry } from '../utils/entryToCard.tsx';
+import DatabaseEntry from '../types/database.types';
+import { Modal } from './Modal';
+import { db, TagList } from '../database/db';
 import {
   calculateWeekHours,
   start,
@@ -16,29 +16,29 @@ import {
   dateToEpoch,
   SECONDS_PER_WEEK,
   Weekday,
-} from "../utils/time.ts";
+} from '../utils/time.ts';
 import {
   groupEntriesByInterval,
   GroupedEntries,
-} from "../utils/groupEntries.ts";
-import { FormData } from "./Modal";
-import { ANIMATION_LENGTH } from "../vars.ts";
+} from '../utils/groupEntries.ts';
+import { FormData } from './Modal';
+import { ANIMATION_LENGTH } from '../vars.ts';
 
 const Timer: React.FC = () => {
   const [entries, setEntries] = useState<DatabaseEntry[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [tags, setTags] = useState<TagList>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
   const handleAddClick = () => {
     const now = new Date();
     const twoHoursAgo = new Date(Date.now() - 7200000);
     const emptyForm: FormData = {
-      name: "",
-      date: twoHoursAgo.toISOString().split("T")[0],
+      name: '',
+      date: twoHoursAgo.toISOString().split('T')[0],
       startTime: formatTime(twoHoursAgo),
       endTime: formatTime(now),
-      tag: tags[0],
+      tag: tags[0][0],
     };
 
     setFormData(emptyForm);
@@ -50,7 +50,7 @@ const Timer: React.FC = () => {
       const entriesWithTags = await db.getAllEntriesWithTags();
       setEntries(entriesWithTags);
     } catch (error) {
-      console.error("Failed to load entries:", error);
+      console.error('Failed to load entries:', error);
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +62,7 @@ const Timer: React.FC = () => {
       const tags = await db.getAllTag();
       setTags(tags);
     } catch (error) {
-      console.error("Failed to load tags:", error);
+      console.error('Failed to load tags:', error);
     } finally {
       setIsLoading(false);
     }
@@ -89,16 +89,15 @@ const Timer: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.info("handleSubmit called");
     e.preventDefault();
     setFormData(undefined);
-    if (formData === undefined) throw Error("Trying to submit empty form");
+    if (formData === undefined) throw Error('Trying to submit empty form');
 
     const newEntry: DatabaseEntry = {
       id: formData?.id || undefined,
       name: formData.name,
       tagName: formData.tag,
-      tagColor: "slate", // arbitrary value, not needed
+      tagColor: 'slate', // arbitrary value, not needed
       synced: false,
       startTimeUtc: dateToEpoch(formData.date, formData.startTime),
       endTimeUtc: dateToEpoch(formData.date, formData.endTime), // Fixed: using endTime instead of startTime
@@ -110,7 +109,7 @@ const Timer: React.FC = () => {
         await loadEntries();
       }, ANIMATION_LENGTH);
     } catch (error) {
-      console.error("Failed to submit entry:", error);
+      console.error('Failed to submit entry:', error);
     }
   };
 
@@ -175,7 +174,7 @@ const Timer: React.FC = () => {
         onClose={handleClose}
         formData={formData}
         setFormData={setFormData}
-        tags={tags}
+        tags={tags.map((i) => i[0])}
         onSubmit={handleSubmit}
       />
     </>

@@ -1,9 +1,9 @@
 import { Entry } from '../components/common/Entry';
-import React from 'react';
+import React, { JSX } from 'react';
 import DatabaseEntry from '../types/database.types';
 import { epochToHHMM } from './time';
 
-function createEntry(entry: DatabaseEntry, onClick: () => void) {
+function createEntry(entry: DatabaseEntry, onClick: () => void): JSX.Element {
   const duration = (entry['endTimeUtc'] - entry['startTimeUtc']) / 3600; // hours
 
   const hours = Math.floor(duration);

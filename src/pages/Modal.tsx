@@ -1,9 +1,9 @@
-import React, { ReactHTMLElement, useEffect, useRef, useState } from "react";
-import { Icon } from "../components/common/Icon";
-import { Input } from "../components/common/Input";
-import { Button } from "../components/common/Button";
-import { Select } from "../components/common/Select";
-import { ANIMATION_LENGTH } from "../vars";
+import React, { ReactHTMLElement, useEffect, useRef, useState } from 'react';
+import { Icon } from '../components/common/Icon';
+import { Input } from '../components/common/Input';
+import { Button } from '../components/common/Button';
+import { Select } from '../components/common/Select';
+import { ANIMATION_LENGTH } from '../vars';
 
 interface Props {
   formData: undefined | FormData;
@@ -32,7 +32,7 @@ export const Modal: React.FC<Props> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.info("useEffect formData");
+    console.info('useEffect formData');
 
     const popover = popoverRef.current;
     if (!popover) return;
@@ -44,20 +44,20 @@ export const Modal: React.FC<Props> = ({
       popover.showPopover();
     } else {
       // add closing animation tags
-      modal.classList.remove("animate-slide-up");
-      modal.classList.add("animate-slide-down");
-      popover.classList.remove("animate-backdrop-in");
-      popover.classList.add("animate-backdrop-out");
+      modal.classList.remove('animate-slide-up');
+      modal.classList.add('animate-slide-down');
+      popover.classList.remove('animate-backdrop-in');
+      popover.classList.add('animate-backdrop-out');
 
       setTimeout(() => {
         if (popover?.hidePopover) {
           popover.hidePopover();
         }
 
-        modal.classList.remove("animate-slide-down");
-        modal.classList.add("animate-slide-up");
-        popover.classList.remove("animate-backdrop-out");
-        popover.classList.add("animate-backdrop-in");
+        modal.classList.remove('animate-slide-down');
+        modal.classList.add('animate-slide-up');
+        popover.classList.remove('animate-backdrop-out');
+        popover.classList.add('animate-backdrop-in');
       }, ANIMATION_LENGTH);
     }
   }, [formData]);
@@ -65,11 +65,14 @@ export const Modal: React.FC<Props> = ({
   let form: React.ReactElement;
 
   form = (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4"
+    >
       <Input
         id="name"
         label="Task Name"
-        value={formData?.name || ""}
+        value={formData?.name || ''}
         type="text"
         onChange={(e) => {
           formData && setFormData({ ...formData, name: e.target.value });
@@ -81,18 +84,18 @@ export const Modal: React.FC<Props> = ({
         label="Date"
         type="date"
         min="2000-01-01"
-        value={formData?.date || ""}
+        value={formData?.date || ''}
         onChange={(e) => {
           formData && setFormData({ ...formData, date: e.target.value });
         }}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 ">
         <Input
           id="startTime"
           label="Start Time"
           type="time"
-          value={formData?.startTime || ""}
+          value={formData?.startTime || ''}
           onChange={(e) => {
             formData && setFormData({ ...formData, startTime: e.target.value });
           }}
@@ -102,7 +105,7 @@ export const Modal: React.FC<Props> = ({
           id="endTime"
           label="End Time"
           type="time"
-          value={formData?.endTime || ""}
+          value={formData?.endTime || ''}
           onChange={(e) => {
             formData && setFormData({ ...formData, endTime: e.target.value });
           }}
@@ -112,13 +115,19 @@ export const Modal: React.FC<Props> = ({
       <Select
         id="tag"
         label="Tag"
-        value={formData?.tag || ""}
+        value={formData?.tag || ''}
         options={tags}
         onChange={(e) => {
           formData && setFormData({ ...formData, tag: e.target.value });
         }}
       />
-      <Button type="submit" text="Add Entry" uiType="primary" />
+      <div className="w-fit ml-auto">
+        <Button
+          type="submit"
+          text="Add Entry"
+          uiType="primary"
+        />
+      </div>
     </form>
   );
 
@@ -132,7 +141,11 @@ export const Modal: React.FC<Props> = ({
         <h2 className="text-xl font-bold mb-4 text-slate-800">Add New Entry</h2>
         {form}
         <div className="absolute top-4 right-4">
-          <Icon name="close" onClick={onClose} className="!text-4xl" />
+          <Icon
+            name="close"
+            onClick={onClose}
+            className="!text-4xl"
+          />
         </div>
       </div>
     </div>
