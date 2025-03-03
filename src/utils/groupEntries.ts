@@ -1,4 +1,4 @@
-import DatabaseEntry from '../types/database.types';
+import DatabaseEntry from "../types/database.types";
 
 export interface GroupedEntries {
   [key: number]: [
@@ -19,8 +19,6 @@ export const groupEntriesByInterval = (
   let currentEntries = [...entries];
   let currentStart = startValue;
   let groupIndex = 0;
-
-  console.warn(currentStart);
 
   while (currentEntries.length > 0) {
     // Find entries that belong to current week interval
