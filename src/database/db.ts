@@ -18,6 +18,8 @@ export interface Entry {
   endTimeUtc: number;
 }
 
+export type TagList = [string, Color['color'], number | undefined][];
+
 // Define the database
 export class TimeOpsDB extends Dexie {
   entries!: Table<Entry>;
@@ -31,9 +33,27 @@ export class TimeOpsDB extends Dexie {
     });
   }
 
-  async getAllTag(): Promise<string[]> {
+  async getAllTag(): Promise<TagList> {
     const tags = await this.tags.toArray();
-    return tags.map((tag) => tag.name);
+    return tags.map((tag) => [tag.name, tag.color, tag.id]);
+  }
+
+  async setTag(entry: TagList[0]): Promise<void> {
+    const [name, color, id] = entry;
+
+    if (id === undefined) {
+      // Create a new tag with name and color
+      await this.tags.add({
+        name: name,
+        color: color,
+      });
+    } else {
+      // Update the existing tag with the given id
+      await this.tags.update(id, {
+        name: name,
+        color: color,
+      });
+    }
   }
 
   async setEntry(entry: DatabaseEntry): Promise<void> {

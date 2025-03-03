@@ -10,3 +10,15 @@ export default interface Color {
     | 'violet'
     | 'fuchsia';
 }
+
+export const colors = [
+  'slate',
+  'red',
+  'amber',
+  'lime',
+  'emerald',
+  'cyan',
+  'blue',
+  'violet',
+  'fuchsia',
+];

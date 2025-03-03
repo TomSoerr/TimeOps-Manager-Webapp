@@ -11,7 +11,7 @@ export const Button: React.FC<Props> = ({ type, onClick, uiType, text }) => {
   const button = (
     <button
       type={type}
-      className="px-4 text-nowrap py-1.5 text-sm font-medium    rounded-sm"
+      className="px-4 text-nowrap py-1.5 text-sm font-medium rounded-sm "
       onClick={onClick}
     >
       <span>{text}</span>
@@ -20,13 +20,13 @@ export const Button: React.FC<Props> = ({ type, onClick, uiType, text }) => {
 
   if (uiType === 'secondary')
     return (
-      <div className="*:hover:bg-indigo-100 *:bg-indigo-200 *:text-indigo-700">
+      <div className="*:hover:bg-indigo-100 *:bg-indigo-200 *:text-indigo-700 w-fit">
         {button}
       </div>
     );
 
   return (
-    <div className="*:hover:bg-indigo-600 *:bg-indigo-500 *:text-indigo-100">
+    <div className="*:hover:bg-indigo-600 *:bg-indigo-500 *:text-indigo-100 w-fit">
       {button}
     </div>
   );
