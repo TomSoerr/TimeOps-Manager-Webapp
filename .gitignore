@@ -6,3 +6,4 @@ node_modules
 **/*.p12
 dev-dist
 dist
+.env

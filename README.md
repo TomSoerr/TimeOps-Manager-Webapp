@@ -14,6 +14,11 @@ Get-NetAdapter | Select-Object Name, InterfaceDescription
 
 # Create new external virtual switch
 New-VMSwitch -Name "WSL_Bridge" -NetAdapterName "Wi-Fi" -AllowManagementOS $true
+
+# into .bashrc
+sudo ip addr flush dev eth0
+sudo ip addr add 192.168.178.43/24 dev eth0
+sudo ip route add default via 192.168.178.1 dev eth0
 ```
 
 ### .wslconfig
