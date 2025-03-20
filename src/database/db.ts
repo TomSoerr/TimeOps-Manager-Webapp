@@ -41,6 +41,7 @@ export class TimeOpsDB extends Dexie {
   async setTag(entry: TagList[0]): Promise<void> {
     const [name, color, id] = entry;
 
+    // TODO check if tag with this name exists
     if (id === undefined) {
       // Create a new tag with name and color
       await this.tags.add({
@@ -120,6 +121,59 @@ export class TimeOpsDB extends Dexie {
         tagColor: tag.color,
       };
     });
+  }
+
+  // new function
+
+  getToken(): string {
+    return localStorage.getItem('token') || '';
+  }
+
+  getUrl(): string {
+    return localStorage.getItem('url') || '';
+  }
+
+  updateUrl(url: string): void {
+    // Remove trailing "/" if present
+    const sanitizedUrl = url.replace(/\/$/, '');
+    localStorage.setItem('url', sanitizedUrl);
+  }
+
+  async createToken(): Promise<void> {
+    const url = localStorage.getItem('url');
+    if (!url) throw Error('No URL defined');
+
+    try {
+      const response = await fetch(`${url}/api/v1/user`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (!data.user.apiToken) {
+        throw new Error('API token not found in the response');
+      }
+
+      // Store the token in localStorage
+      this.updateToken(data.user.apiToken);
+    } catch (error) {
+      console.error('Error fetching token:', error);
+      throw error;
+    }
+  }
+
+  updateToken(token: string): void {
+    localStorage.setItem('token', token);
+  }
+
+  connect(): void {
+    return;
   }
 }
 

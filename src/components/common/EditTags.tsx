@@ -17,10 +17,6 @@ export const EditTags: React.FC<Props> = ({ tags }) => {
     tagsWithoutDefault.length > 0 ? tagsWithoutDefault[0][0] : '',
   );
 
-  useEffect(() => {
-    console.info(tags);
-  }, [tags]);
-
   if (tagsWithoutDefault.length === 0) {
     return <div>No Tags to edit</div>;
   }

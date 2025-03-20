@@ -5,7 +5,7 @@ interface Props {
   id: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   value: string;
-  type: 'time' | 'date' | 'text';
+  type: 'time' | 'date' | 'text' | 'url';
   min?: string;
   max?: string;
 }
