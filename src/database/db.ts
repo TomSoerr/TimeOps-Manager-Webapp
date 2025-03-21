@@ -172,6 +172,25 @@ export class TimeOpsDB extends Dexie {
     localStorage.setItem('token', token);
   }
 
+  // fetchData = async () => {
+  //   try {
+  //     // Different behavior based on online status
+  //     if (isOnline) {
+  //       const response = await fetch('https://api.example.com/data');
+  //       const newData = await response.json();
+  //       eventBus.publish(EventTypes.DATA_UPDATED, newData);
+  //     } else {
+  //       // Get from local storage when offline
+  //       const cachedData = localStorage.getItem('cached_data');
+  //       if (cachedData) {
+  //         eventBus.publish(EventTypes.DATA_UPDATED, JSON.parse(cachedData));
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
   connect(): void {
     return;
   }

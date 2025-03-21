@@ -1,5 +1,6 @@
 import { NavItem } from './NavItem';
 import React, { useEffect, useRef, useState } from 'react';
+import Status from './Status';
 
 import { v4 as uuid } from 'uuid';
 
@@ -29,6 +30,7 @@ export const Nav: React.FC = () => {
           { to: '/settings', name: 'Settings', icon: 'settings' },
         ]}
       />
+      <Status />
     </nav>
   );
 };
