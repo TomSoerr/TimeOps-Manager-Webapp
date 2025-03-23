@@ -1,4 +1,4 @@
-import DatabaseEntry from '../types/database.types';
+import TimeEntry from '../types/database.types';
 
 // Constants for time calculations
 export const SECONDS_PER_DAY = 86400; // 24 * 60 * 60
@@ -18,7 +18,7 @@ export const start =
   DAYS_SINCE_EPOCH_TO_MONDAY * SECONDS_PER_DAY +
   offset;
 
-export const calculateWeekHours = (entries: DatabaseEntry[]) => {
+export const calculateWeekHours = (entries: TimeEntry[]) => {
   const totalSeconds = entries.reduce(
     (acc, entry) => acc + (entry.endTimeUtc - entry.startTimeUtc),
     0,
