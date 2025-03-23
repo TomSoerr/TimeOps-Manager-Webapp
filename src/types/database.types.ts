@@ -1,6 +1,6 @@
 import Color from '../types/color.types';
 
-export default interface DatabaseEntry {
+export default interface TimeEntry {
   id: number | undefined;
   name: string;
   synced: boolean;

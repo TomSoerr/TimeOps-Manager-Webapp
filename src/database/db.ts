@@ -1,6 +1,7 @@
 import Dexie, { Table } from 'dexie';
 import Color from '../types/color.types';
-import DatabaseEntry from '../types/database.types';
+import TimeEntry from '../types/database.types';
+import { API_BASE_URL } from '../vars';
 
 // Define interfaces for the tables
 export interface Tag {
@@ -10,10 +11,11 @@ export interface Tag {
 }
 
 export interface Entry {
+  localId?: number;
   id?: number;
   name: string;
   synced: boolean;
-  tagId: number; //  key to Tag table
+  tagId: number;
   startTimeUtc: number;
   endTimeUtc: number;
 }
@@ -29,11 +31,51 @@ export class TimeOpsDB extends Dexie {
     super('timeOpsDB');
     this.version(1).stores({
       tags: '++id, name',
-      entries: '++id, tagId, synced, startTimeUtc, endTimeUtc',
+      entries: '++localId, id, tagId, synced, startTimeUtc, endTimeUtc', // add db id for RESTful api request
     });
   }
 
-  async getAllTag(): Promise<TagList> {
+  async updateLocal(): Promise<void> {
+    const url = this.getUrl();
+    const token = this.getToken();
+
+    if (!url || !token) {
+      throw new Error('API URL or token is missing');
+    }
+
+    try {
+      const entriesData = await fetch(`${url}${API_BASE_URL}/entries`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const tagsData = await fetch(`${url}${API_BASE_URL}/entries`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!entriesData.ok) {
+        throw new Error(`Failed to fetch entries: ${entriesData.statusText}`); // TODO test statusText
+      }
+
+      if (!tagsData.ok) {
+        throw new Error(`Failed to fetch tags: ${tagsData.statusText}`); // TODO test statusText
+      }
+
+      // after the entries are fetched the dexie db should be updated. It is important to keep entries that are tagged synced false. All entries that are synced can be removed from the dexie db and all entries from the api should be written to the the local db. the tag table can just be overwritten because there is not feature to change the tags in offline mode
+    } catch (error) {
+      console.error('Error fetching entries from API:', error);
+      throw error;
+    }
+  }
+
+  async getAllTag(isOnline: boolean): Promise<TagList> {
     const tags = await this.tags.toArray();
     return tags.map((tag) => [tag.name, tag.color, tag.id]);
   }
@@ -57,7 +99,7 @@ export class TimeOpsDB extends Dexie {
     }
   }
 
-  async setEntry(entry: DatabaseEntry): Promise<void> {
+  async setEntry(entry: TimeEntry): Promise<void> {
     // Find the tag id based on the tag name
     const tag = await this.tags.where('name').equals(entry.tagName).first();
 
@@ -91,15 +133,26 @@ export class TimeOpsDB extends Dexie {
     }
   }
 
-  async getAllEntriesWithTags(): Promise<DatabaseEntry[]> {
-    const entries = await this.entries
+  async getAllEntriesWithTags(isOnline: boolean): Promise<TimeEntry[]> {
+    let entriesData: Entry[];
+    let tagsData: Tag[];
+
+    entriesData = await this.entries
       .orderBy('startTimeUtc')
       .reverse()
       .toArray();
-    const tags = await this.tags.toArray();
 
-    return entries.map((entry: Entry) => {
-      const tag = tags.find((t) => t.id === entry.tagId);
+    tagsData = await this.tags.toArray();
+
+    /**
+     * Update local Tags, Entries and Running table after view update
+     */
+
+    /**
+     * Join the Tags and Entries Table
+     */
+    return entriesData.map((entry: Entry) => {
+      const tag = tagsData.find((t) => t.id === entry.tagId);
 
       if (!tag) {
         throw new Error(
@@ -123,7 +176,7 @@ export class TimeOpsDB extends Dexie {
     });
   }
 
-  // new function
+  // new functions
 
   getToken(): string {
     return localStorage.getItem('token') || '';
@@ -140,11 +193,11 @@ export class TimeOpsDB extends Dexie {
   }
 
   async createToken(): Promise<void> {
-    const url = localStorage.getItem('url');
+    const url = this.getUrl();
     if (!url) throw Error('No URL defined');
 
     try {
-      const response = await fetch(`${url}/api/v1/user`, {
+      const response = await fetch(`${url}${API_BASE_URL}/user`, {
         method: 'GET',
       });
 

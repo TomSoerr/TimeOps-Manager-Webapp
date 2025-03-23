@@ -19,22 +19,13 @@ const ConnectionContext = createContext<ConnectionContextType | undefined>(
 export const ConnectionProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isOnline, setOnline] = useState<boolean>(navigator.onLine);
+  const [isOnline, setOnline] = useState<boolean>(false);
 
   useEffect(() => {
-    // Listen to browser's online/offline events
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
     // Initialize SSE connection
     const cleanupSSE = setupSSEConnection(setOnline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
       cleanupSSE();
     };
   }, []);

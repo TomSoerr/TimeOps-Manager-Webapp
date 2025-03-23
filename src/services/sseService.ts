@@ -1,10 +1,6 @@
 import { db } from '../database/db';
 import { EventSource } from 'eventsource';
-
-// Define the extended options interface that supports headers
-interface EventSourceOptions extends EventSourceInit {
-  headers?: Record<string, string>;
-}
+import { API_BASE_URL } from '../vars';
 
 /**
  * This functions establishes a Server-Sent Events (SSE) to the api in order to
@@ -43,7 +39,7 @@ export const setupSSEConnection = (
       /**
        * If credentials are set in localStorage try to connect to api
        */
-      const apiUrl = `${db.getUrl()}/api/v1/events`;
+      const apiUrl = `${db.getUrl()}${API_BASE_URL}/events`;
 
       // Create EventSource with fetch option to include Authorization header
       eventSource = new EventSource(apiUrl, {
@@ -57,6 +53,14 @@ export const setupSSEConnection = (
             },
           }),
       });
+
+      /**
+       * Set the app to online when the connection is successfully established
+       */
+      eventSource.onopen = () => {
+        console.log('SSE connection established');
+        setOnlineStatus(true);
+      };
 
       /**
        * When connection fails retry after TIMEOUT
@@ -84,7 +88,10 @@ export const setupSSEConnection = (
        * Add specific event listeners here
        */
       eventSource.addEventListener('data-update', (event) => {
-        console.info('Received SSE message:', event.data);
+        console.info('Received SSE message:');
+
+        // trigger update event for entry and tag update
+        window.dispatchEvent(new CustomEvent('data-update'));
       });
     } catch (error) {
       /**

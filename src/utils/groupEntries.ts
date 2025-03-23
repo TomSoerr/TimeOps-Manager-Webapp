@@ -1,16 +1,16 @@
-import DatabaseEntry from "../types/database.types";
+import TimeEntry from '../types/database.types';
 
 export interface GroupedEntries {
   [key: number]: [
     number,
     {
-      [key: number]: [number, DatabaseEntry[]]; // [dayTimestamp, entries]
+      [key: number]: [number, TimeEntry[]]; // [dayTimestamp, entries]
     },
   ]; // [weekTimestamp, dayGroups]
 }
 
 export const groupEntriesByInterval = (
-  entries: DatabaseEntry[],
+  entries: TimeEntry[],
   startValue: number, // current monday
   interval: number, // a week
   smallInterval: number, // a day
@@ -29,7 +29,7 @@ export const groupEntriesByInterval = (
 
     if (entriesInInterval.length > 0) {
       // Create day groups within the week
-      const dayGroups: { [key: number]: [number, DatabaseEntry[]] } = {};
+      const dayGroups: { [key: number]: [number, TimeEntry[]] } = {};
 
       // monday + week - day -> begin with sunday
       let currentDay = currentStart + interval - smallInterval;

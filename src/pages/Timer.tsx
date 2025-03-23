@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useConnection } from '../context/ConnectionContext';
 import { Section } from '../components/layout/Section';
 import { FabAdd } from '../components/common/FabAdd';
 import { FabStart } from '../components/common/FabStart';
 import { createEntry } from '../utils/entryToCard.tsx';
-import DatabaseEntry from '../types/database.types';
+import TimeEntry from '../types/database.types';
 import { Modal } from './Modal';
 import { db, TagList } from '../database/db';
 import {
@@ -25,7 +26,8 @@ import { FormData } from './Modal';
 import { ANIMATION_LENGTH } from '../vars.ts';
 
 const Timer: React.FC = () => {
-  const [entries, setEntries] = useState<DatabaseEntry[]>([]);
+  const { isOnline } = useConnection(); // Access the online/offline status
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [tags, setTags] = useState<TagList>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
@@ -47,7 +49,7 @@ const Timer: React.FC = () => {
   const loadEntries = async () => {
     setIsLoading(true);
     try {
-      const entriesWithTags = await db.getAllEntriesWithTags();
+      const entriesWithTags = await db.getAllEntriesWithTags(isOnline);
       setEntries(entriesWithTags);
     } catch (error) {
       console.error('Failed to load entries:', error);
@@ -59,7 +61,7 @@ const Timer: React.FC = () => {
   const loadTags = async () => {
     setIsLoading(true);
     try {
-      const tags = await db.getAllTag();
+      const tags = await db.getAllTag(isOnline);
       setTags(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
@@ -67,6 +69,29 @@ const Timer: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handleDataUpdate = async () => {
+      console.log('Data updated');
+
+      // update local db
+      await db.updateLocal();
+
+      loadTags();
+      loadEntries();
+    };
+
+    window.addEventListener('data-update', handleDataUpdate);
+
+    // Watch for changes in isOnline and trigger updates
+    if (isOnline) {
+      handleDataUpdate();
+    }
+
+    return () => {
+      window.removeEventListener('data-update', handleDataUpdate);
+    };
+  }, [isOnline]);
 
   useEffect(() => {
     loadEntries();
@@ -77,7 +102,7 @@ const Timer: React.FC = () => {
     setFormData(undefined);
   };
 
-  const handleEditClick = (entry: DatabaseEntry) => {
+  const handleEditClick = (entry: TimeEntry) => {
     setFormData({
       id: entry.id,
       name: entry.name,
@@ -93,7 +118,7 @@ const Timer: React.FC = () => {
     setFormData(undefined);
     if (formData === undefined) throw Error('Trying to submit empty form');
 
-    const newEntry: DatabaseEntry = {
+    const newEntry: TimeEntry = {
       id: formData?.id || undefined,
       name: formData.name,
       tagName: formData.tag,

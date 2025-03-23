@@ -32,8 +32,6 @@ export const Modal: React.FC<Props> = ({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.info('useEffect formData');
-
     const popover = popoverRef.current;
     if (!popover) return;
     const modal = popover.children[0];
