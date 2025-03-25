@@ -6,7 +6,7 @@ import { FabStart } from '../components/common/FabStart';
 import { createEntry } from '../utils/entryToCard.tsx';
 import TimeEntry from '../types/database.types';
 import { Modal } from './Modal';
-import { db, TagList } from '../database/db';
+import { db, Entry, TagList } from '../database/db';
 import {
   calculateWeekHours,
   start,
@@ -28,7 +28,7 @@ import { ANIMATION_LENGTH } from '../vars.ts';
 const Timer: React.FC = () => {
   const { isOnline } = useConnection(); // Access the online/offline status
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [tags, setTags] = useState<TagList>([]);
+  const [tags, setTags] = useState<TagList[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
@@ -40,7 +40,7 @@ const Timer: React.FC = () => {
       date: twoHoursAgo.toISOString().split('T')[0],
       startTime: formatTime(twoHoursAgo),
       endTime: formatTime(now),
-      tag: tags[0][0],
+      tagId: tags[0].id,
     };
 
     setFormData(emptyForm);
@@ -49,7 +49,7 @@ const Timer: React.FC = () => {
   const loadEntries = async () => {
     setIsLoading(true);
     try {
-      const entriesWithTags = await db.getAllEntriesWithTags(isOnline);
+      const entriesWithTags = await db.getAllEntriesWithTags();
       setEntries(entriesWithTags);
     } catch (error) {
       console.error('Failed to load entries:', error);
@@ -61,7 +61,7 @@ const Timer: React.FC = () => {
   const loadTags = async () => {
     setIsLoading(true);
     try {
-      const tags = await db.getAllTag(isOnline);
+      const tags = await db.getAllTag();
       setTags(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
@@ -70,32 +70,31 @@ const Timer: React.FC = () => {
     }
   };
 
+  const handleDataUpdate = async () => {
+    console.log('Data updated');
+
+    // update local db
+    await db.updateLocal();
+
+    loadTags();
+    loadEntries();
+  };
+
   useEffect(() => {
-    const handleDataUpdate = async () => {
-      console.log('Data updated');
-
-      // update local db
-      await db.updateLocal();
-
-      loadTags();
-      loadEntries();
-    };
-
-    window.addEventListener('data-update', handleDataUpdate);
-
     // Watch for changes in isOnline and trigger updates
     if (isOnline) {
       handleDataUpdate();
+      db.updateRemote();
     }
-
-    return () => {
-      window.removeEventListener('data-update', handleDataUpdate);
-    };
   }, [isOnline]);
 
   useEffect(() => {
-    loadEntries();
-    loadTags();
+    window.addEventListener('data-update', handleDataUpdate);
+
+    handleDataUpdate();
+    return () => {
+      window.removeEventListener('data-update', handleDataUpdate);
+    };
   }, []);
 
   const handleClose = () => {
@@ -105,8 +104,8 @@ const Timer: React.FC = () => {
   const handleEditClick = (entry: TimeEntry) => {
     setFormData({
       id: entry.id,
+      tagId: entry.tagId,
       name: entry.name,
-      tag: entry.tagName,
       startTime: epochToHHMM(entry.startTimeUtc),
       endTime: epochToHHMM(entry.endTimeUtc),
       date: epochToYYMMDD(entry.startTimeUtc),
@@ -115,23 +114,28 @@ const Timer: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormData(undefined);
+    setFormData(undefined); // schedule closing event
     if (formData === undefined) throw Error('Trying to submit empty form');
 
-    const newEntry: TimeEntry = {
+    const newEntry: Entry = {
       id: formData?.id || undefined,
       name: formData.name,
-      tagName: formData.tag,
-      tagColor: 'slate', // arbitrary value, not needed
-      synced: false,
+      tagId: formData.tagId,
+      synced: 0, // because new
       startTimeUtc: dateToEpoch(formData.date, formData.startTime),
-      endTimeUtc: dateToEpoch(formData.date, formData.endTime), // Fixed: using endTime instead of startTime
+      endTimeUtc: dateToEpoch(formData.date, formData.endTime),
+      msg: '',
     };
 
     try {
       await db.setEntry(newEntry);
-      setTimeout(async () => {
-        await loadEntries();
+      setTimeout(() => {
+        if (isOnline) {
+          db.updateRemote();
+          return;
+        }
+
+        loadEntries();
       }, ANIMATION_LENGTH);
     } catch (error) {
       console.error('Failed to submit entry:', error);
@@ -150,8 +154,6 @@ const Timer: React.FC = () => {
   );
 
   type WeekEntry = GroupedEntries[number];
-  type DayGroups = WeekEntry[1];
-  type DayGroup = DayGroups[number];
 
   const weekGroupsEntries = Object.entries(weekGroups) as Array<
     [string, WeekEntry]
@@ -168,7 +170,7 @@ const Timer: React.FC = () => {
 
         return (
           <Section
-            key={weekIndex}
+            key={`w-${weekIndex}`}
             headline={`Week from ${new Date(weekTimestamp * 1000).toLocaleDateString()}`}
             hours={calculateWeekHours(weekEntries)}
           >
@@ -176,7 +178,7 @@ const Timer: React.FC = () => {
               ([dayIndex, [dayTimestamp, entries]]) => (
                 <Section
                   subSection={true}
-                  key={dayIndex}
+                  key={`d-${dayIndex}`}
                   headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
                   hours={calculateWeekHours(entries)}
                 >
@@ -199,7 +201,7 @@ const Timer: React.FC = () => {
         onClose={handleClose}
         formData={formData}
         setFormData={setFormData}
-        tags={tags.map((i) => i[0])}
+        tags={tags}
         onSubmit={handleSubmit}
       />
     </>
