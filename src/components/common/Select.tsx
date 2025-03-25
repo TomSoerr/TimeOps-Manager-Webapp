@@ -1,11 +1,12 @@
 import React from 'react';
+import { TagList } from '../../database/db';
 
 interface Props {
   label: string;
   id: string;
   onChange: (e: any) => void;
-  value?: string;
-  options: string[];
+  value: number;
+  options: TagList[];
 }
 
 export const Select: React.FC<Props> = ({
@@ -29,13 +30,13 @@ export const Select: React.FC<Props> = ({
         onChange={onChange}
         className="text-slate-800 w-full text-base border-0 outline-0"
       >
-        {options.map((value: string) => {
+        {options.map((tag: TagList) => {
           return (
             <option
-              key={value}
-              value={value}
+              key={tag?.id}
+              value={tag?.id}
             >
-              {value}
+              {tag?.name}
             </option>
           );
         })}

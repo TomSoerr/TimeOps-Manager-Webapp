@@ -16,12 +16,12 @@ function createEntry(entry: TimeEntry, onClick: () => void): JSX.Element {
   return (
     <li key={entry.id}>
       <Entry
-        key={entry.id}
         name={entry.name}
         synced={entry.synced}
         tag={entry.tagName}
         time={formattedTime}
         color={entry.tagColor}
+        msg={entry.msg}
         onClick={onClick}
         timespan={start + ' - ' + end}
       />

@@ -4,13 +4,14 @@ import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Select } from '../components/common/Select';
 import { ANIMATION_LENGTH } from '../vars';
+import { TagList } from '../database/db';
 
 interface Props {
   formData: undefined | FormData;
   setFormData: (data: FormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
-  tags: string[];
+  tags: TagList[];
 }
 
 export interface FormData {
@@ -19,7 +20,7 @@ export interface FormData {
   date: string;
   startTime: string;
   endTime: string;
-  tag: string;
+  tagId: number;
 }
 
 export const Modal: React.FC<Props> = ({
@@ -113,16 +114,16 @@ export const Modal: React.FC<Props> = ({
       <Select
         id="tag"
         label="Tag"
-        value={formData?.tag || ''}
+        value={formData?.tagId || 0}
         options={tags}
         onChange={(e) => {
-          formData && setFormData({ ...formData, tag: e.target.value });
+          formData && setFormData({ ...formData, tagId: e.target.value });
         }}
       />
       <div className="w-fit ml-auto">
         <Button
           type="submit"
-          text="Add Entry"
+          text="Save Entry"
           uiType="primary"
         />
       </div>
