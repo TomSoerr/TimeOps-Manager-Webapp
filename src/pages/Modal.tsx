@@ -134,7 +134,7 @@ export const Modal: React.FC<Props> = ({
       popover="auto"
       className=" h-1/1 w-1/1 max-h-1/1 max-w-1/1 bg-transparent backdrop:bg-slate-900/30 overflow-hidden animate-backdrop-in"
     >
-      <div className="fixed h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50 shadow-xl py-6 px-4 rounded-t-2xl animate-slide-up">
+      <div className="max-w-3xl mx-auto fixed h-170 max-h-1/1 bottom-0 left-0 right-0 bg-slate-50 shadow-xl py-6 px-4 rounded-t-2xl animate-slide-up">
         <h2 className="text-xl font-bold mb-4 text-slate-800">Add New Entry</h2>
         {form}
         <div className="absolute top-4 right-4">

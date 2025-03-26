@@ -42,10 +42,10 @@ mkcert 192.168.178.43
 mkcert -CAROOT
 
 # Convert to CRT for Android and Windows
-openssl x509 -in "rootCA.pem" -out rootCA.crt
+openssl x509 -in "192.168.178.43.pem" -out rootCA.crt
 
 # Add cert on Windows (run as Admin)
-certutil -addstore -f "ROOT" "rootCA.pem"
+certutil -addstore -f "ROOT" "192.168.178.43.pem"
 
 # List current port proxy
 netsh interface portproxy show all
@@ -55,5 +55,7 @@ netsh interface portproxy delete v4tov4 listenport=5173 listenaddress=0.0.0.0
 
 # Add new port proxy
 netsh interface portproxy add v4tov4 listenport=5173 listenaddress=0.0.0.0 connectport=5173 connectaddress=192.168.178.43
+
+netsh interface portproxy add v4tov4 listenport=3000 listenaddress=0.0.0.0 connectport=3000 connectaddress=192.168.178.43
 
 ```
