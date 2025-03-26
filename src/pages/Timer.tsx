@@ -127,9 +127,9 @@ const Timer: React.FC = () => {
       try {
         await db.setEntry(newEntry);
 
-        setTimeout(() => {
+        setTimeout(async () => {
           if (isOnline) {
-            db.updateRemote();
+            if (await db.updateRemote()) loadEntries();
           } else {
             loadEntries();
           }
@@ -141,6 +141,11 @@ const Timer: React.FC = () => {
     [formData, isOnline, loadEntries],
   );
 
+  const createDate = (date: number): string => {
+    const d = new Date(date * 1000);
+    return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+  };
+
   // Effect for online status changes
   useEffect(() => {
     if (!isOnline) return;
@@ -150,7 +155,7 @@ const Timer: React.FC = () => {
     const runUpdates = async () => {
       try {
         await handleDataUpdate();
-        await db.updateRemote();
+        if (await db.updateRemote()) loadEntries();
       } catch (error) {
         console.error('Error during updates:', error);
       }
@@ -186,9 +191,9 @@ const Timer: React.FC = () => {
     [weekGroups],
   );
 
-  if (isLoading) {
-    return <div className="p-4">Loading...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="p-4">Loading...</div>;
+  // }
 
   return (
     <>
@@ -201,7 +206,7 @@ const Timer: React.FC = () => {
         return (
           <Section
             key={`w-${weekIndex}`}
-            headline={`Week from ${new Date(weekTimestamp * 1000).toLocaleDateString()}`}
+            headline={`Week from ${createDate(weekTimestamp)}`}
             hours={calculateWeekHours(weekEntries)}
           >
             {Object.entries(dayGroups).map(
@@ -214,7 +219,11 @@ const Timer: React.FC = () => {
                 >
                   {entries.map((entry) => (
                     <React.Fragment
-                      key={entry.id || entry.remoteId || Date.now()}
+                      key={
+                        (entry.remoteId ?
+                          `${entry.synced}-${entry.remoteId}`
+                        : false) || entry.id
+                      }
                     >
                       {createEntry(entry, () => handleEditClick(entry))}
                     </React.Fragment>

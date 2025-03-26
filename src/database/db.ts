@@ -125,8 +125,10 @@ export class TimeOpsDB extends Dexie {
     return { url, token };
   }
 
-  async updateRemote(): Promise<void> {
+  async updateRemote(): Promise<boolean> {
     const { url, token } = this.getUrlToken();
+    let unsyncableChange: boolean = false;
+    let atLeastOneSync: boolean = false;
 
     try {
       // Query all entries that are not synced (synced = 0)
@@ -135,7 +137,7 @@ export class TimeOpsDB extends Dexie {
         .equals(0)
         .toArray();
 
-      if (unsyncedEntries.length === 0) return;
+      if (unsyncedEntries.length === 0) return false;
 
       // TODO optimize and use batch update
       for (let i = 0; i < unsyncedEntries.length; i++) {
@@ -161,8 +163,9 @@ export class TimeOpsDB extends Dexie {
             const errorData = await response.clone().json();
 
             await this.entries.update(entry.id, {
-              msg: errorData.errors?.errors?.[0]?.msg || 'Validation failed',
+              msg: errorData.errors?.[0]?.msg || 'Validation failed',
             });
+            unsyncableChange = true;
             continue;
           }
 
@@ -174,6 +177,7 @@ export class TimeOpsDB extends Dexie {
 
           if (entry.id !== undefined) {
             await this.entries.delete(entry.id);
+            atLeastOneSync = true;
           } else {
             console.warn('Could not delete local entry - ID is undefined');
           }
@@ -203,8 +207,9 @@ export class TimeOpsDB extends Dexie {
 
             // Update the local entry with the error message
             await this.entries.update(entry.id, {
-              msg: errorData.errors?.errors?.[0]?.msg || 'Validation failed',
+              msg: errorData.errors?.[0]?.msg || 'Validation failed',
             });
+            unsyncableChange = true;
             continue;
           }
 
@@ -215,6 +220,7 @@ export class TimeOpsDB extends Dexie {
 
           if (entry.id !== undefined) {
             await this.entries.delete(entry.id);
+            atLeastOneSync = true;
           } else {
             console.warn('Could not delete local entry - ID is undefined');
           }
@@ -224,6 +230,9 @@ export class TimeOpsDB extends Dexie {
       console.error('Error updating remote database:', error);
       throw error;
     }
+
+    // return true if nothing send to server -> no sse event
+    return unsyncableChange && !atLeastOneSync;
   }
 
   async deleteRemote(): Promise<void> {
@@ -317,7 +326,7 @@ export class TimeOpsDB extends Dexie {
         if (response.status === 400) {
           const errorData = await response.clone().json();
           const errorMessage =
-            errorData.errors?.errors?.[0]?.msg || 'Tag validation failed';
+            errorData.errors?.[0]?.msg || 'Tag validation failed';
           throw new Error(errorMessage);
         }
 
@@ -333,8 +342,6 @@ export class TimeOpsDB extends Dexie {
 
       // Case 2: ID is set, meaning it's an existing tag to be updated
       else {
-        console.log(`Updating tag with ID ${entry.id}:`, entry.name);
-
         const response = await fetch(`${url}${API_BASE_URL}/tags/${entry.id}`, {
           method: 'PUT',
           headers: {
@@ -351,7 +358,7 @@ export class TimeOpsDB extends Dexie {
         if (response.status === 400) {
           const errorData = await response.clone().json();
           const errorMessage =
-            errorData.errors?.errors?.[0]?.msg || 'Tag validation failed';
+            errorData.errors?.[0]?.msg || 'Tag validation failed';
           console.error('Validation error updating tag:', errorMessage);
           throw new Error(errorMessage);
         }

@@ -2,21 +2,22 @@ import TimeEntry from '../types/database.types';
 
 // Constants for time calculations
 export const SECONDS_PER_DAY = 86400; // 24 * 60 * 60
-const DAYS_SINCE_EPOCH_TO_MONDAY = 4; // Thu->Mon = - 4 days
 export const SECONDS_PER_WEEK = 7 * SECONDS_PER_DAY; // one week
 
 // time zone offset in unix epoch seconds
 export const offset = new Date().getTimezoneOffset() * 60;
 
-// current time in unix epoch seconds
-const now = Math.floor(Date.now() / 1000);
+// Get current time in unix epoch seconds (UTC)
+const nowInSeconds = Math.floor(Date.now() / 1000);
 
-// last monday in current time zone in unix epoch seconds
+const currentDayOfWeek = new Date().getDay();
+const daysToSubtract = (currentDayOfWeek + 6) % 7;
+
 export const start =
-  now -
-  (now % SECONDS_PER_DAY) -
-  DAYS_SINCE_EPOCH_TO_MONDAY * SECONDS_PER_DAY +
-  offset;
+  nowInSeconds -
+  (nowInSeconds % SECONDS_PER_DAY) -
+  daysToSubtract * SECONDS_PER_DAY +
+  offset; // offset is need for edge cases
 
 export const calculateWeekHours = (entries: TimeEntry[]) => {
   const totalSeconds = entries.reduce(

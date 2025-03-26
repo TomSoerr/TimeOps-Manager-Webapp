@@ -27,8 +27,8 @@ export const Entry: React.FC<Props> = ({
   return (
     <Card onClick={onClick}>
       <div className="flex">
-        <div className="text-left">
-          <h4 className="text-base leading-5 font-bold text-slate-800 mb-1">
+        <div className="text-left flex-1 min-w-0">
+          <h4 className="text-base leading-5 font-bold text-slate-800 mb-1 truncate">
             {name}
           </h4>
 
