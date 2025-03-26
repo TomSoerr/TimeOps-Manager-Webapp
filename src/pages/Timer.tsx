@@ -73,11 +73,11 @@ const Timer: React.FC = () => {
   // Handle form actions
   const handleAddClick = useCallback(() => {
     if (tags.length === 0) return;
-    if (!formData) return;
 
     const now = new Date();
     const twoHoursAgo = new Date(Date.now() - 7200000);
 
+    console.log('add called');
     setFormData({
       name: '',
       date: twoHoursAgo.toISOString().split('T')[0],
@@ -226,7 +226,7 @@ const Timer: React.FC = () => {
         );
       })}
 
-      <div className="fixed bottom-22 right-4 flex gap-2">
+      <div className="fixed bottom-22 lg:bottom-4 lg:right-[calc((100vw-48rem)/2)] right-4 flex gap-2">
         <FabAdd onClick={handleAddClick} />
         <FabStart />
       </div>
