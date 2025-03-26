@@ -1,35 +1,89 @@
-import React, { JSX, useEffect, useRef, useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Input } from './Input';
 import { Select } from './Select';
 import { Button } from './Button';
-import { TagList, db } from '../../database/db';
+import { TagEntry, db } from '../../database/db';
 import { Tag } from './Tag';
-import { colors } from '../../types/color.types';
+import Color, { colors } from '../../types/color.types';
 
-type TagListItem = TagList[number];
-
-interface Props {
-  item: TagListItem;
-  add?: true;
+interface TagFormProps {
+  item: TagEntry;
+  add?: boolean;
 }
 
-export const TagForm: React.FC<Props> = ({ item, add }) => {
-  const [formData, setFormData] = useState<TagListItem>(item);
+export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
+  const [formData, setFormData] = useState<TagEntry>(item);
   const [edited, setEdited] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Memoize the selected color ID to avoid recalculating on every render
+  const selectedColorId = useMemo(
+    () => colors.find((col) => col.name === formData.color)?.id || colors[0].id,
+    [formData.color],
+  );
 
-    try {
-      await db.setTag(formData);
-      setEdited(false);
-      if (add) {
-        setFormData(['Tagname', 'slate', undefined]);
+  // Handle name change with proper typing
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEdited(true);
+      setFormData((prev) => ({ ...prev, name: e.target.value }));
+    },
+    [],
+  );
+
+  // Handle color change with proper typing
+  const handleColorChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setEdited(true);
+      const colorId = parseInt(e.target.value, 10);
+
+      // Find color by ID with type safety
+      const selectedColor = colors.find((col) => col.id === colorId);
+      setFormData((prev) => ({
+        ...prev,
+        color: (selectedColor?.name as Color['color']) || colors[0].name,
+      }));
+    },
+    [],
+  );
+
+  // Handle form submission
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (isSubmitting) return;
+
+      try {
+        setIsSubmitting(true);
+        await db.setTag(formData);
+        setEdited(false);
+
+        if (add) {
+          setFormData({ name: 'Tagname', color: 'slate', id: -1 });
+        }
+      } catch (error) {
+        console.error('Failed to submit tag:', error);
+
+        // Get the error message from the error object
+        let errorMessage: string;
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else {
+          errorMessage = 'Unknown error occurred';
+        }
+
+        setErrorMsg(errorMessage);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('Failed to submit entry:', error);
-    }
-  };
+    },
+    [formData, add, isSubmitting],
+  );
 
   return (
     <form
@@ -38,43 +92,37 @@ export const TagForm: React.FC<Props> = ({ item, add }) => {
     >
       <div className="absolute -top-1 -left-1">
         <Tag
-          name={formData[0]}
-          color={formData[1]}
+          name={formData.name}
+          color={formData.color}
         />
       </div>
       <div className="space-y-2">
+        <p className="text-red-500 text-sm">{errorMsg}</p>
         <Input
           id="name"
           label="Tag Name"
-          value={formData[0]}
+          value={formData.name}
           type="text"
-          onChange={(e) => {
-            if (formData) {
-              setEdited(true);
-              setFormData([e.target.value, formData[1], formData[2]]);
-            }
-          }}
+          onChange={handleNameChange}
+          disabled={isSubmitting}
         />
         <Select
           id="color"
           label="Tag Color"
-          value={formData[1]}
+          value={selectedColorId}
           options={colors}
-          onChange={(e) => {
-            if (formData) {
-              setEdited(true);
-              setFormData([formData[0], e.target.value, formData[2]]);
-            }
-          }}
+          onChange={handleColorChange}
+          disabled={isSubmitting}
         />
         <div className="w-fit ml-auto">
-          {edited ?
+          {edited && (
             <Button
               type="submit"
-              text={'Save'}
+              text={add ? 'Add new tag' : 'Save'}
               uiType="secondary"
+              disabled={isSubmitting}
             />
-          : ''}
+          )}
         </div>
       </div>
     </form>

@@ -4,7 +4,7 @@ import TimeEntry from '../types/database.types';
 import { API_BASE_URL } from '../vars';
 
 // Define interfaces for the tables
-export interface Tag {
+export interface TagEntry {
   id: number;
   name: string;
   color: Color['color'];
@@ -21,16 +21,15 @@ export interface Entry {
   msg: string;
 }
 
-export interface TagList {
-  name: string;
-  color: Color['color'];
-  id: number;
+interface UrlToken {
+  url: string;
+  token: string;
 }
 
 // Define the database
 export class TimeOpsDB extends Dexie {
   entries!: Table<Entry>;
-  tags!: Table<Tag>;
+  tags!: Table<TagEntry>;
 
   constructor() {
     super('timeOpsDB');
@@ -41,12 +40,7 @@ export class TimeOpsDB extends Dexie {
   }
 
   async updateLocal(): Promise<void> {
-    const url = this.getUrl();
-    const token = this.getToken();
-
-    if (!url || !token) {
-      throw new Error('API URL or token is missing');
-    }
+    const { url, token } = this.getUrlToken();
 
     try {
       // Fetch entries and tags from the API
@@ -107,7 +101,7 @@ export class TimeOpsDB extends Dexie {
 
         await this.tags.clear();
         const tagsToAdd = tagsFromApi.map(
-          (tag: any): Tag => ({
+          (tag: any): TagEntry => ({
             id: tag.id,
             name: tag.name,
             color: tag.color,
@@ -115,21 +109,24 @@ export class TimeOpsDB extends Dexie {
         );
         await this.tags.bulkAdd(tagsToAdd);
       });
-
-      console.log('Local database updated successfully');
     } catch (error) {
       console.error('Error updating local database:', error);
       throw error;
     }
   }
 
-  async updateRemote(): Promise<void> {
+  getUrlToken(): UrlToken {
     const url = this.getUrl();
     const token = this.getToken();
 
     if (!url || !token) {
       throw new Error('API URL or token is missing');
     }
+    return { url, token };
+  }
+
+  async updateRemote(): Promise<void> {
+    const { url, token } = this.getUrlToken();
 
     try {
       // Query all entries that are not synced (synced = 0)
@@ -138,13 +135,9 @@ export class TimeOpsDB extends Dexie {
         .equals(0)
         .toArray();
 
-      if (unsyncedEntries.length === 0) {
-        console.log('No unsynced entries to update');
-        return;
-      }
+      if (unsyncedEntries.length === 0) return;
 
-      console.log(`Found ${unsyncedEntries.length} unsynced entries to update`);
-
+      // TODO optimize and use batch update
       for (let i = 0; i < unsyncedEntries.length; i++) {
         const entry = unsyncedEntries[i];
         // Case 1: Entry doesn't have a remoteId - create new entry via POST
@@ -227,8 +220,6 @@ export class TimeOpsDB extends Dexie {
           }
         }
       }
-
-      console.log('Remote update completed successfully');
     } catch (error) {
       console.error('Error updating remote database:', error);
       throw error;
@@ -236,12 +227,7 @@ export class TimeOpsDB extends Dexie {
   }
 
   async deleteRemote(): Promise<void> {
-    const url = this.getUrl();
-    const token = this.getToken();
-
-    if (!url || !token) {
-      throw new Error('API URL or token is missing');
-    }
+    const { url, token } = this.getUrlToken();
 
     try {
       await this.entries.clear();
@@ -298,10 +284,10 @@ export class TimeOpsDB extends Dexie {
       });
   }
 
-  async getAllTag(): Promise<TagList[]> {
+  async getAllTag(): Promise<TagEntry[]> {
     const tags = await this.tags.toArray();
     return tags.map(
-      (tag): TagList => ({
+      (tag): TagEntry => ({
         name: tag.name,
         color: tag.color,
         id: tag.id,
@@ -309,13 +295,83 @@ export class TimeOpsDB extends Dexie {
     );
   }
 
-  async setTag(entry: TagList, isOnline: boolean): Promise<void> {
-    // only possible
+  async setTag(entry: TagEntry): Promise<void> {
+    const { url, token } = this.getUrlToken();
+
+    try {
+      // Case 1: ID is -1, meaning it's a new tag to be created
+      if (entry.id === -1) {
+        const response = await fetch(`${url}${API_BASE_URL}/tags`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: entry.name,
+            color: entry.color,
+          }),
+        });
+
+        // Handle validation errors
+        if (response.status === 400) {
+          const errorData = await response.clone().json();
+          const errorMessage =
+            errorData.errors?.errors?.[0]?.msg || 'Tag validation failed';
+          throw new Error(errorMessage);
+        }
+
+        // Handle other errors
+        if (!response.ok) {
+          throw new Error(`Failed to create tag: ${response.statusText}`);
+        }
+
+        // Force update of local database to get the new tag with proper ID
+        await this.updateLocal();
+        return;
+      }
+
+      // Case 2: ID is set, meaning it's an existing tag to be updated
+      else {
+        console.log(`Updating tag with ID ${entry.id}:`, entry.name);
+
+        const response = await fetch(`${url}${API_BASE_URL}/tags/${entry.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: entry.name,
+            color: entry.color,
+          }),
+        });
+
+        // Handle validation errors
+        if (response.status === 400) {
+          const errorData = await response.clone().json();
+          const errorMessage =
+            errorData.errors?.errors?.[0]?.msg || 'Tag validation failed';
+          console.error('Validation error updating tag:', errorMessage);
+          throw new Error(errorMessage);
+        }
+
+        // Handle other errors
+        if (!response.ok) {
+          throw new Error(`Failed to update tag: ${response.statusText}`);
+        }
+
+        // Force update of local database to get the updated tag
+        await this.updateLocal();
+        return;
+      }
+    } catch (error) {
+      console.error('Error setting tag:', error);
+      throw error;
+    }
   }
 
   async setEntry(entry: Entry): Promise<void> {
-    console.warn(entry);
-
     if (entry.id === undefined) {
       await this.entries.add({
         name: entry.name,
@@ -354,8 +410,7 @@ export class TimeOpsDB extends Dexie {
   }
 
   async createToken(): Promise<void> {
-    const url = this.getUrl();
-    if (!url) throw Error('No URL defined');
+    const { url } = this.getUrlToken();
 
     try {
       const response = await fetch(`${url}${API_BASE_URL}/user`, {
@@ -367,8 +422,6 @@ export class TimeOpsDB extends Dexie {
       }
 
       const data = await response.json();
-
-      console.log(data);
 
       if (!data.user.apiToken) {
         throw new Error('API token not found in the response');
@@ -384,10 +437,6 @@ export class TimeOpsDB extends Dexie {
 
   updateToken(token: string): void {
     localStorage.setItem('token', token);
-  }
-
-  connect(): void {
-    return;
   }
 }
 

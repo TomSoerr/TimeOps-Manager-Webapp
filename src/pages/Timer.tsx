@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useConnection } from '../context/ConnectionContext';
 import { Section } from '../components/layout/Section';
 import { FabAdd } from '../components/common/FabAdd';
@@ -6,7 +6,7 @@ import { FabStart } from '../components/common/FabStart';
 import { createEntry } from '../utils/entryToCard.tsx';
 import TimeEntry from '../types/database.types';
 import { Modal } from './Modal';
-import { db, Entry, TagList } from '../database/db';
+import { db, Entry, TagEntry } from '../database/db';
 import {
   calculateWeekHours,
   start,
@@ -26,82 +26,68 @@ import { FormData } from './Modal';
 import { ANIMATION_LENGTH } from '../vars.ts';
 
 const Timer: React.FC = () => {
-  const { isOnline } = useConnection(); // Access the online/offline status
+  const { isOnline } = useConnection();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [tags, setTags] = useState<TagList[]>([]);
+  const [tags, setTags] = useState<TagEntry[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
-  const handleAddClick = () => {
-    const now = new Date();
-    const twoHoursAgo = new Date(Date.now() - 7200000);
-    const emptyForm: FormData = {
-      name: '',
-      date: twoHoursAgo.toISOString().split('T')[0],
-      startTime: formatTime(twoHoursAgo),
-      endTime: formatTime(now),
-      tagId: tags[0].id,
-    };
-
-    setFormData(emptyForm);
-  };
-
-  const loadEntries = async () => {
-    setIsLoading(true);
+  // Memoize functions to prevent unnecessary re-renders
+  const loadEntries = useCallback(async () => {
     try {
       const entriesWithTags = await db.getAllEntriesWithTags();
       setEntries(entriesWithTags);
     } catch (error) {
       console.error('Failed to load entries:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadTags = async () => {
-    setIsLoading(true);
+  const loadTags = useCallback(async () => {
     try {
       const tags = await db.getAllTag();
       setTags(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
+    }
+  }, []);
+
+  // Combined data loading function
+  const handleDataUpdate = useCallback(async () => {
+    console.info('Data updated, isOnline:', isOnline);
+    setIsLoading(true);
+
+    try {
+      if (isOnline) {
+        await db.updateLocal();
+      }
+
+      // Load data in parallel for better performance
+      await Promise.all([loadTags(), loadEntries()]);
+    } catch (error) {
+      console.error('Error updating data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isOnline, loadEntries, loadTags]);
 
-  const handleDataUpdate = async () => {
-    console.log('Data updated');
+  // Handle form actions
+  const handleAddClick = useCallback(() => {
+    if (tags.length === 0) return;
+    if (!formData) return;
 
-    // update local db
-    await db.updateLocal();
+    const now = new Date();
+    const twoHoursAgo = new Date(Date.now() - 7200000);
 
-    loadTags();
-    loadEntries();
-  };
+    setFormData({
+      name: '',
+      date: twoHoursAgo.toISOString().split('T')[0],
+      startTime: formatTime(twoHoursAgo),
+      endTime: formatTime(now),
+      tagId: tags[0]?.id || 0,
+    });
+  }, [formData, tags]);
 
-  useEffect(() => {
-    // Watch for changes in isOnline and trigger updates
-    if (isOnline) {
-      handleDataUpdate();
-      db.updateRemote();
-    }
-  }, [isOnline]);
-
-  useEffect(() => {
-    window.addEventListener('data-update', handleDataUpdate);
-
-    handleDataUpdate();
-    return () => {
-      window.removeEventListener('data-update', handleDataUpdate);
-    };
-  }, []);
-
-  const handleClose = () => {
-    setFormData(undefined);
-  };
-
-  const handleEditClick = (entry: TimeEntry) => {
+  const handleEditClick = useCallback((entry: TimeEntry) => {
     setFormData({
       id: entry.id,
       tagId: entry.tagId,
@@ -110,60 +96,104 @@ const Timer: React.FC = () => {
       endTime: epochToHHMM(entry.endTimeUtc),
       date: epochToYYMMDD(entry.startTimeUtc),
     });
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormData(undefined); // schedule closing event
-    if (formData === undefined) throw Error('Trying to submit empty form');
+  const handleClose = useCallback(() => {
+    setFormData(undefined);
+  }, []);
 
-    const newEntry: Entry = {
-      id: formData?.id || undefined,
-      name: formData.name,
-      tagId: formData.tagId,
-      synced: 0, // because new
-      startTimeUtc: dateToEpoch(formData.date, formData.startTime),
-      endTimeUtc: dateToEpoch(formData.date, formData.endTime),
-      msg: '',
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!formData) {
+        console.error('Trying to submit empty form');
+        return;
+      }
+
+      const formDataCopy = { ...formData };
+      setFormData(undefined); // Close modal
+
+      const newEntry: Entry = {
+        id: formDataCopy.id || undefined,
+        name: formDataCopy.name,
+        tagId: formDataCopy.tagId,
+        synced: 0, // because new
+        startTimeUtc: dateToEpoch(formDataCopy.date, formDataCopy.startTime),
+        endTimeUtc: dateToEpoch(formDataCopy.date, formDataCopy.endTime),
+        msg: '',
+      };
+
+      try {
+        await db.setEntry(newEntry);
+
+        setTimeout(() => {
+          if (isOnline) {
+            db.updateRemote();
+          } else {
+            loadEntries();
+          }
+        }, ANIMATION_LENGTH);
+      } catch (error) {
+        console.error('Failed to submit entry:', error);
+      }
+    },
+    [formData, isOnline, loadEntries],
+  );
+
+  // Effect for online status changes
+  useEffect(() => {
+    if (!isOnline) return;
+
+    let isMounted = true; // For cleanup/abort
+
+    const runUpdates = async () => {
+      try {
+        await handleDataUpdate();
+        await db.updateRemote();
+      } catch (error) {
+        console.error('Error during updates:', error);
+      }
     };
 
-    try {
-      await db.setEntry(newEntry);
-      setTimeout(() => {
-        if (isOnline) {
-          db.updateRemote();
-          return;
-        }
+    if (isMounted) runUpdates();
 
-        loadEntries();
-      }, ANIMATION_LENGTH);
-    } catch (error) {
-      console.error('Failed to submit entry:', error);
-    }
-  };
+    return () => {
+      isMounted = false; // Prevent state updates after unmount
+    };
+  }, [isOnline, handleDataUpdate]);
+
+  // Effect for data update event listener
+  useEffect(() => {
+    window.addEventListener('data-update', handleDataUpdate);
+
+    handleDataUpdate();
+
+    return () => {
+      window.removeEventListener('data-update', handleDataUpdate);
+    };
+  }, [handleDataUpdate]);
+
+  // Memoize expensive calculations
+  const weekGroups = useMemo(
+    () =>
+      groupEntriesByInterval(entries, start, SECONDS_PER_WEEK, SECONDS_PER_DAY),
+    [entries],
+  );
+
+  const weekGroupsEntries = useMemo(
+    () => Object.entries(weekGroups) as Array<[string, GroupedEntries[number]]>,
+    [weekGroups],
+  );
 
   if (isLoading) {
     return <div className="p-4">Loading...</div>;
   }
 
-  const weekGroups = groupEntriesByInterval(
-    entries,
-    start,
-    SECONDS_PER_WEEK,
-    SECONDS_PER_DAY,
-  );
-
-  type WeekEntry = GroupedEntries[number];
-
-  const weekGroupsEntries = Object.entries(weekGroups) as Array<
-    [string, WeekEntry]
-  >;
-
   return (
     <>
       {weekGroupsEntries.map(([weekIndex, [weekTimestamp, dayGroups]]) => {
         const dayGroupArray = Object.values(dayGroups);
-
         const weekEntries = dayGroupArray.flatMap(
           ([_, dayEntries]) => dayEntries,
         );
@@ -182,9 +212,13 @@ const Timer: React.FC = () => {
                   headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
                   hours={calculateWeekHours(entries)}
                 >
-                  {entries.map((entry) =>
-                    createEntry(entry, () => handleEditClick(entry)),
-                  )}
+                  {entries.map((entry) => (
+                    <React.Fragment
+                      key={entry.id || entry.remoteId || Date.now()}
+                    >
+                      {createEntry(entry, () => handleEditClick(entry))}
+                    </React.Fragment>
+                  ))}
                 </Section>
               ),
             )}
