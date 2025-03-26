@@ -1,17 +1,17 @@
-import React, { ReactHTMLElement, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Icon } from '../components/common/Icon';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Select } from '../components/common/Select';
 import { ANIMATION_LENGTH } from '../vars';
-import { TagList } from '../database/db';
+import { TagEntry } from '../database/db';
 
 interface Props {
   formData: undefined | FormData;
   setFormData: (data: FormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
-  tags: TagList[];
+  tags: TagEntry[];
 }
 
 export interface FormData {
@@ -61,9 +61,7 @@ export const Modal: React.FC<Props> = ({
     }
   }, [formData]);
 
-  let form: React.ReactElement;
-
-  form = (
+  const form = (
     <form
       onSubmit={onSubmit}
       className="space-y-4"
@@ -73,9 +71,9 @@ export const Modal: React.FC<Props> = ({
         label="Task Name"
         value={formData?.name || ''}
         type="text"
-        onChange={(e) => {
-          formData && setFormData({ ...formData, name: e.target.value });
-        }}
+        onChange={(e) =>
+          formData && setFormData({ ...formData, name: e.target.value })
+        }
       />
 
       <Input
@@ -84,9 +82,9 @@ export const Modal: React.FC<Props> = ({
         type="date"
         min="2000-01-01"
         value={formData?.date || ''}
-        onChange={(e) => {
-          formData && setFormData({ ...formData, date: e.target.value });
-        }}
+        onChange={(e) =>
+          formData && setFormData({ ...formData, date: e.target.value })
+        }
       />
 
       <div className="grid grid-cols-2 gap-4 ">
@@ -95,9 +93,9 @@ export const Modal: React.FC<Props> = ({
           label="Start Time"
           type="time"
           value={formData?.startTime || ''}
-          onChange={(e) => {
-            formData && setFormData({ ...formData, startTime: e.target.value });
-          }}
+          onChange={(e) =>
+            formData && setFormData({ ...formData, startTime: e.target.value })
+          }
         />
 
         <Input
@@ -105,9 +103,9 @@ export const Modal: React.FC<Props> = ({
           label="End Time"
           type="time"
           value={formData?.endTime || ''}
-          onChange={(e) => {
-            formData && setFormData({ ...formData, endTime: e.target.value });
-          }}
+          onChange={(e) =>
+            formData && setFormData({ ...formData, endTime: e.target.value })
+          }
         />
       </div>
 
@@ -116,9 +114,9 @@ export const Modal: React.FC<Props> = ({
         label="Tag"
         value={formData?.tagId || 0}
         options={tags}
-        onChange={(e) => {
-          formData && setFormData({ ...formData, tagId: e.target.value });
-        }}
+        onChange={(e) =>
+          formData && setFormData({ ...formData, tagId: +e.target.value })
+        }
       />
       <div className="w-fit ml-auto">
         <Button

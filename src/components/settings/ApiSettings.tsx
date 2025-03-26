@@ -1,119 +1,152 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../database/db';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 
 const ApiSettings: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [settings, setSettings] = useState({
+    token: '',
+    savedToken: '',
+    url: '',
+    savedUrl: '',
+    isLoading: false,
+    error: '',
+  });
 
-  const [error, setError] = useState<string>('');
+  const handleTokenChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSettings((prev) => ({ ...prev, token: e.target.value }));
+    },
+    [],
+  );
 
-  const [token, setToken] = useState<string>('');
-  const [lToken, setLToken] = useState<string>(''); // to detect change between local storage and input field
-  const [url, setUrl] = useState<string>('');
-  const [lUrl, setLUrl] = useState<string>(''); // to detect change between local storage and input field
+  const handleUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSettings((prev) => ({ ...prev, url: e.target.value }));
+    },
+    [],
+  );
 
-  const updateToken = () => {
-    const t = db.getToken();
-    setToken(t);
-    setLToken(t);
-  };
-
-  const updateUrl = () => {
-    const u = db.getUrl();
-    setUrl(u);
-    setLUrl(u);
-  };
-
-  useEffect(() => {
-    console.info(token, url);
-    updateToken();
-    updateUrl();
+  const updateTokenInState = useCallback(() => {
+    const token = db.getToken();
+    setSettings((prev) => ({
+      ...prev,
+      token,
+      savedToken: token,
+    }));
   }, []);
+
+  const updateUrlInState = useCallback(() => {
+    const url = db.getUrl();
+    setSettings((prev) => ({
+      ...prev,
+      url,
+      savedUrl: url,
+    }));
+  }, []);
+
+  const handleUpdateToken = useCallback(() => {
+    db.updateToken(settings.token);
+    updateTokenInState();
+  }, [settings.token, updateTokenInState]);
+
+  const handleGenerateToken = useCallback(async () => {
+    try {
+      setSettings((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: 'Loading Token...',
+      }));
+      await db.createToken();
+      updateTokenInState();
+      setSettings((prev) => ({ ...prev, isLoading: false, error: '' }));
+    } catch (error) {
+      setSettings((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : String(error),
+      }));
+    }
+  }, [updateTokenInState]);
+
+  const handleUpdateUrl = useCallback(() => {
+    db.updateUrl(settings.url);
+    updateUrlInState();
+  }, [settings.url, updateUrlInState]);
+
+  // Load initial values
+  useEffect(() => {
+    updateTokenInState();
+    updateUrlInState();
+  }, [updateTokenInState, updateUrlInState]);
+
+  const { token, savedToken, url, savedUrl, isLoading, error } = settings;
+  const hasTokenChanged = token !== savedToken;
+  const hasUrlChanged = url !== savedUrl;
+  const missingToken = !token;
+
+  const statusMessage =
+    !token && !url ?
+      'You need to generate or input a token and define the API endpoint URL'
+    : !url ? 'You need to define the API endpoint URL'
+    : !token ? 'You need to generate or input a token'
+    : '';
 
   return (
     <SettingsSection headline="API">
       <SHeadline>API Endpoint</SHeadline>
-      <p className="text-sm">
-        {!token && !url ?
-          'You need to generate or input a token and define the API endpoint URL'
-        : !url ?
-          'You need to define the API endpoint URL'
-        : !token ?
-          'You need to generate or input  a token'
-        : ''}
-      </p>
-      <p className="text-sm text-red-600">{error}</p>
+      {statusMessage && <p className="text-sm">{statusMessage}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
       <Input
         type="url"
         label="API URL"
         id="url"
         value={url}
-        onChange={(e) => setUrl(e.target.value)}
+        onChange={handleUrlChange}
+        disabled={isLoading}
       />
+
       <Input
         type="text"
         id="token"
         label="API Token"
         value={token}
-        onChange={(e) => setToken(e.target.value)}
+        onChange={handleTokenChange}
+        disabled={isLoading}
       />
-      {lToken !== token ?
+
+      {hasTokenChanged ?
         <Button
           uiType="secondary"
           text="Update Token"
           type="button"
-          onClick={() => {
-            db.updateToken(token);
-            updateToken();
-          }}
+          onClick={handleUpdateToken}
+          disabled={isLoading}
         />
-      : lToken === token && !lToken ?
-        <Button
-          uiType="secondary"
-          text="Generate Token"
-          type="button"
-          onClick={async () => {
-            try {
-              setError('Loading Token...');
-              await db.createToken();
-              updateToken();
-              setError('');
-            } catch (error) {
-              setError(error);
-            }
-          }}
-        />
-      : ''}
+      : missingToken && (
+          <Button
+            uiType="secondary"
+            text="Generate Token"
+            type="button"
+            onClick={handleGenerateToken}
+            disabled={isLoading}
+          />
+        )
+      }
 
-      {lUrl !== url ?
+      {hasUrlChanged ?
         <Button
           uiType="primary"
           text="Update URL"
           type="button"
-          onClick={() => {
-            db.updateUrl(url);
-            updateUrl();
-          }}
-        />
-      : lUrl === url && url && token ?
-        <Button
-          uiType="primary"
-          text="Connect to API"
-          type="button"
-          onClick={() => {
-            try {
-              setError('loading');
-              db.connect();
-              setError('');
-            } catch (error) {
-              setError(error);
-            }
-          }}
+          onClick={handleUpdateUrl}
+          disabled={isLoading}
         />
       : ''}
     </SettingsSection>
   );
 };
+
 export default ApiSettings;

@@ -14,10 +14,10 @@ const Settings: React.FC = () => {
 
       <ApiSettings />
       {isOnline ?
-        <DatabaseSettings />
-      : ''}
-      {isOnline ?
-        <TagSettings />
+        <>
+          <DatabaseSettings />
+          <TagSettings />
+        </>
       : ''}
     </div>
   );

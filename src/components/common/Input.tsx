@@ -8,6 +8,7 @@ interface Props {
   type: 'time' | 'date' | 'text' | 'url';
   min?: string;
   max?: string;
+  disabled?: boolean;
 }
 
 export const Input: React.FC<Props> = ({
@@ -18,6 +19,7 @@ export const Input: React.FC<Props> = ({
   onChange,
   min,
   max,
+  disabled = false,
 }) => {
   return (
     <label
@@ -36,6 +38,7 @@ export const Input: React.FC<Props> = ({
         className="text-slate-800 w-full text-base border-0 outline-0"
         min={min}
         max={max}
+        disabled={disabled}
         required
       />
       <span className="absolute hidden top-0.5 right-2 text-xs text-red-500">

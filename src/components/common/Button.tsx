@@ -5,14 +5,22 @@ interface Props {
   text: string;
   type: 'submit' | 'button';
   onClick?: () => void;
+  disabled?: boolean;
 }
 
-export const Button: React.FC<Props> = ({ type, onClick, uiType, text }) => {
+export const Button: React.FC<Props> = ({
+  type,
+  onClick,
+  uiType,
+  text,
+  disabled = false,
+}) => {
   const button = (
     <button
       type={type}
       className="px-4 text-nowrap py-1.5 text-sm font-medium rounded-sm "
       onClick={onClick}
+      disabled={disabled}
     >
       <span>{text}</span>
     </button>

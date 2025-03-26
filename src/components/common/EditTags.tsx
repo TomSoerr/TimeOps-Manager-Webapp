@@ -1,46 +1,66 @@
-import React, { JSX, useEffect, useState } from 'react';
-import { TagList } from '../../database/db';
+import React, { useEffect, useState, useMemo } from 'react';
+import { TagEntry } from '../../database/db';
 import { TagForm } from './TagForm';
 import { Select } from './Select';
 
 interface Props {
-  tags: TagList;
+  tags: TagEntry[];
 }
 
-type TagListItem = TagList[number];
-
 export const EditTags: React.FC<Props> = ({ tags }) => {
-  const tagsWithoutDefault = tags.filter((i) => i[0] !== 'No Project');
-
-  // Move useState to the top level for proper Hook ordering
-  const [selectedTagName, setSelectedTagName] = useState<string>(
-    tagsWithoutDefault.length > 0 ? tagsWithoutDefault[0][0] : '',
+  const tagsWithoutDefault = useMemo(
+    () => tags.filter((i) => i.name !== 'No Project'),
+    [tags],
   );
 
-  if (tagsWithoutDefault.length === 0) {
-    return <div>No Tags to edit</div>;
-  }
+  const [selectedTagId, setSelectedTagId] = useState<number | null>(null);
 
-  // Find the selected tag
-  const selectedTag =
-    tagsWithoutDefault.find((tag) => tag[0] === selectedTagName) ||
-    tagsWithoutDefault[0];
+  useEffect(() => {
+    if (tagsWithoutDefault.length > 0) {
+      const currentTagExists = tagsWithoutDefault.some(
+        (tag) => tag.id === selectedTagId,
+      );
+
+      if (!currentTagExists) {
+        setSelectedTagId(tagsWithoutDefault[0].id);
+      }
+    } else {
+      setSelectedTagId(null);
+    }
+  }, [tagsWithoutDefault, selectedTagId]);
+
+  const selectedTag = useMemo(() => {
+    if (!selectedTagId) return null;
+    return (
+      tagsWithoutDefault.find((tag) => tag.id === selectedTagId) ||
+      (tagsWithoutDefault.length > 0 ? tagsWithoutDefault[0] : null)
+    );
+  }, [tagsWithoutDefault, selectedTagId]);
+
+  const handleTagChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTagId(parseInt(e.target.value, 10));
+  };
 
   return (
     <div className="space-y-4">
-      <Select
-        label="Select Tag to Edit"
-        id="select-tag"
-        value={selectedTagName}
-        onChange={(e) => setSelectedTagName(e.target.value)}
-        options={tagsWithoutDefault.map((tag) => tag[0])}
-      />
+      {tagsWithoutDefault.length > 0 ?
+        <>
+          <Select
+            label="Select Tag to Edit"
+            id="select-tag"
+            value={selectedTagId || -1}
+            onChange={handleTagChange}
+            options={tagsWithoutDefault}
+          />
 
-      {/* Show only the selected tag form */}
-      <TagForm
-        key={selectedTag[2]}
-        item={selectedTag}
-      />
+          {selectedTag && (
+            <TagForm
+              key={selectedTag.id}
+              item={selectedTag}
+            />
+          )}
+        </>
+      : <div>No Tags to edit</div>}
     </div>
   );
 };

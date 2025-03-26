@@ -1,12 +1,17 @@
 import React from 'react';
-import { TagList } from '../../database/db';
+
+export interface Option {
+  name: string;
+  id: number;
+}
 
 interface Props {
   label: string;
   id: string;
-  onChange: (e: any) => void;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   value: number;
-  options: TagList[];
+  options: Option[];
+  disabled?: boolean;
 }
 
 export const Select: React.FC<Props> = ({
@@ -15,6 +20,7 @@ export const Select: React.FC<Props> = ({
   value,
   onChange,
   options,
+  disabled,
 }) => {
   return (
     <label
@@ -29,8 +35,9 @@ export const Select: React.FC<Props> = ({
         value={value}
         onChange={onChange}
         className="text-slate-800 w-full text-base border-0 outline-0"
+        disabled={disabled}
       >
-        {options.map((tag: TagList) => {
+        {options.map((tag: Option) => {
           return (
             <option
               key={tag?.id}

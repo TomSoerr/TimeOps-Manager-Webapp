@@ -1,29 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { TagList } from '../../database/db';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TagEntry } from '../../database/db';
 import { db } from '../../database/db';
 import { EditTags } from '../../components/common/EditTags';
 import { TagForm } from '../../components/common/TagForm';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
+import { useConnection } from '../../context/ConnectionContext';
 
 const TagSettings: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [tags, setTags] = useState<TagList>([]); // TODO make this dry when backend is working
+  const [tags, setTags] = useState<TagEntry[]>([]);
+  const { isOnline } = useConnection();
 
-  const loadTags = async () => {
-    setIsLoading(true);
+  const loadTags = useCallback(async () => {
     try {
       const tags = await db.getAllTag();
       setTags(tags);
+      console.log(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, []);
+
+  const handleDataUpdate = useCallback(async () => {
+    console.info('Data updated, isOnline:', isOnline);
+
+    try {
+      await db.updateLocal();
+      await loadTags();
+    } catch (error) {
+      console.error('Error updating data:', error);
+    }
+  }, [isOnline, loadTags]);
+
+  // no need for initial data update because component is only mounted online
+  useEffect(() => {
+    if (isOnline) handleDataUpdate();
+  }, [isOnline, handleDataUpdate]);
 
   useEffect(() => {
-    loadTags();
-  }, []);
+    window.addEventListener('data-update', handleDataUpdate);
+
+    return () => {
+      window.removeEventListener('data-update', handleDataUpdate);
+    };
+  }, [handleDataUpdate]);
 
   return (
     <SettingsSection headline="Tags">
@@ -32,7 +51,7 @@ const TagSettings: React.FC = () => {
       <SHeadline>New Tag</SHeadline>
       <TagForm
         add={true}
-        item={['Tagname', 'slate', undefined]}
+        item={{ name: 'Tagname', color: 'slate', id: -1 }}
       />
     </SettingsSection>
   );

@@ -23,7 +23,7 @@ export const setupSSEConnection = (
 
     try {
       if (!db.getUrl() || !db.getToken()) {
-        console.log('Missing URL or token, will retry in 5 seconds');
+        console.info('Missing URL or token, will retry in 5 seconds');
         setOnlineStatus(false);
 
         // Clear any existing timer
@@ -58,7 +58,6 @@ export const setupSSEConnection = (
        * Set the app to online when the connection is successfully established
        */
       eventSource.onopen = () => {
-        console.log('SSE connection established');
         setOnlineStatus(true);
       };
 
@@ -87,9 +86,7 @@ export const setupSSEConnection = (
       /**
        * Add specific event listeners here
        */
-      eventSource.addEventListener('data-update', (event) => {
-        console.info('Received SSE message:');
-
+      eventSource.addEventListener('data-update', () => {
         // trigger update event for entry and tag update
         window.dispatchEvent(new CustomEvent('data-update'));
       });
