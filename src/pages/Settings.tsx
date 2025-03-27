@@ -15,8 +15,8 @@ const Settings: React.FC = () => {
       <ApiSettings />
       {isOnline ?
         <>
-          <DatabaseSettings />
           <TagSettings />
+          <DatabaseSettings />
         </>
       : ''}
     </div>

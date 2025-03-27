@@ -17,7 +17,8 @@ interface Props {
 export interface FormData {
   id?: number;
   name: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   tagId: number;
@@ -76,17 +77,6 @@ export const Modal: React.FC<Props> = ({
         }
       />
 
-      <Input
-        id="date"
-        label="Date"
-        type="date"
-        min="2000-01-01"
-        value={formData?.date || ''}
-        onChange={(e) =>
-          formData && setFormData({ ...formData, date: e.target.value })
-        }
-      />
-
       <div className="grid grid-cols-2 gap-4 ">
         <Input
           id="startTime"
@@ -99,12 +89,36 @@ export const Modal: React.FC<Props> = ({
         />
 
         <Input
+          id="startDate"
+          label="Date"
+          type="date"
+          min="2000-01-01"
+          value={formData?.startDate || ''}
+          onChange={(e) =>
+            formData && setFormData({ ...formData, startDate: e.target.value })
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 ">
+        <Input
           id="endTime"
           label="End Time"
           type="time"
           value={formData?.endTime || ''}
           onChange={(e) =>
             formData && setFormData({ ...formData, endTime: e.target.value })
+          }
+        />
+
+        <Input
+          id="endDate"
+          label="Date"
+          type="date"
+          min="2000-01-01"
+          value={formData?.endDate || ''}
+          onChange={(e) =>
+            formData && setFormData({ ...formData, endDate: e.target.value })
           }
         />
       </div>

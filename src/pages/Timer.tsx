@@ -8,7 +8,7 @@ import TimeEntry from '../types/database.types';
 import { Modal } from './Modal';
 import { db, Entry, TagEntry } from '../database/db';
 import {
-  calculateWeekHours,
+  sumUpHours,
   start,
   SECONDS_PER_DAY,
   epochToHHMM,
@@ -80,7 +80,8 @@ const Timer: React.FC = () => {
     console.log('add called');
     setFormData({
       name: '',
-      date: twoHoursAgo.toISOString().split('T')[0],
+      startDate: twoHoursAgo.toISOString().split('T')[0],
+      endDate: now.toISOString().split('T')[0],
       startTime: formatTime(twoHoursAgo),
       endTime: formatTime(now),
       tagId: tags[0]?.id || 0,
@@ -94,7 +95,8 @@ const Timer: React.FC = () => {
       name: entry.name,
       startTime: epochToHHMM(entry.startTimeUtc),
       endTime: epochToHHMM(entry.endTimeUtc),
-      date: epochToYYMMDD(entry.startTimeUtc),
+      startDate: epochToYYMMDD(entry.startTimeUtc),
+      endDate: epochToYYMMDD(entry.endTimeUtc),
     });
   }, []);
 
@@ -119,8 +121,11 @@ const Timer: React.FC = () => {
         name: formDataCopy.name,
         tagId: formDataCopy.tagId,
         synced: 0, // because new
-        startTimeUtc: dateToEpoch(formDataCopy.date, formDataCopy.startTime),
-        endTimeUtc: dateToEpoch(formDataCopy.date, formDataCopy.endTime),
+        startTimeUtc: dateToEpoch(
+          formDataCopy.startDate,
+          formDataCopy.startTime,
+        ),
+        endTimeUtc: dateToEpoch(formDataCopy.endDate, formDataCopy.endTime),
         msg: '',
       };
 
@@ -207,7 +212,7 @@ const Timer: React.FC = () => {
           <Section
             key={`w-${weekIndex}`}
             headline={`Week from ${createDate(weekTimestamp)}`}
-            hours={calculateWeekHours(weekEntries)}
+            hours={sumUpHours(weekEntries)}
           >
             {Object.entries(dayGroups).map(
               ([dayIndex, [dayTimestamp, entries]]) => (
@@ -215,7 +220,7 @@ const Timer: React.FC = () => {
                   subSection={true}
                   key={`d-${dayIndex}`}
                   headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
-                  hours={calculateWeekHours(entries)}
+                  hours={sumUpHours(entries)}
                 >
                   {entries.map((entry) => (
                     <React.Fragment

@@ -14,7 +14,6 @@ const TagSettings: React.FC = () => {
     try {
       const tags = await db.getAllTag();
       setTags(tags);
-      console.log(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
     }
