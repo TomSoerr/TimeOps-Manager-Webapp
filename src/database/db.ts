@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import Color from '../types/color.types';
 import TimeEntry from '../types/database.types';
 import { API_BASE_URL } from '../vars';
+import { offset } from '../utils/time';
 
 // Define interfaces for the tables
 export interface TagEntry {
@@ -258,6 +259,79 @@ export class TimeOpsDB extends Dexie {
     }
   }
 
+  async importFile(file: File): Promise<void> {
+    const { url, token } = this.getUrlToken();
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      console.log('import file', file);
+
+      const response = await fetch(`${url}${API_BASE_URL}/db`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-UTC-Offset': `${offset}`,
+        },
+        body: formData,
+      });
+      console.info('importFile', response);
+
+      if (!response.ok) {
+        throw new Error(`Failed to import file: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error importing file:', error);
+      throw error;
+    }
+  }
+
+  async exportDatabase(): Promise<void> {
+    const { url, token } = this.getUrlToken();
+    const apiUrl = url;
+
+    try {
+      const response = await fetch(`${apiUrl}${API_BASE_URL}/db`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to export database: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      const jsonString = JSON.stringify(data, null, 2);
+
+      const blob = new Blob([jsonString], { type: 'application/json' });
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+
+      const date = new Date();
+      const formattedDate = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+      link.download = `timeops_export_${formattedDate}.json`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      throw error;
+    }
+  }
+
   async getAllEntriesWithTags(): Promise<TimeEntry[]> {
     return await this.entries
       .orderBy('startTimeUtc')
@@ -399,8 +473,6 @@ export class TimeOpsDB extends Dexie {
       });
     }
   }
-
-  // new functions
 
   getToken(): string {
     return localStorage.getItem('token') || '';

@@ -19,14 +19,15 @@ export const start =
   daysToSubtract * SECONDS_PER_DAY +
   offset; // offset is need for edge cases
 
-export const calculateWeekHours = (entries: TimeEntry[]) => {
+export const sumUpHours = (entries: TimeEntry[]) => {
   const totalSeconds = entries.reduce(
     (acc, entry) => acc + (entry.endTimeUtc - entry.startTimeUtc),
     0,
   );
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
-  return `${hours}:${minutes.toString().padStart(2, '0')}`;
+  const seconds = totalSeconds % 60;
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
 export const formatTime = (date: Date): string => {

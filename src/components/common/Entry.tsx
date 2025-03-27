@@ -33,7 +33,7 @@ export const Entry: React.FC<Props> = ({
           </h4>
 
           <p className="font-bold  text-slate-700 text-sm">
-            {time} hrs{' '}
+            {time}{' '}
             <span className="font-normal  text-slate-400 text-sm">
               {timespan}
             </span>

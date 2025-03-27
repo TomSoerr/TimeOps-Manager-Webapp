@@ -19,5 +19,5 @@ export const SettingsSection: React.FC<Props> = ({ children, headline }) => {
 };
 
 export const SHeadline: React.FC<HProps> = ({ children }) => {
-  return <h3 className="text-lg font-semibold">{children}</h3>;
+  return <h3 className="text-lg font-normal">{children}</h3>;
 };
