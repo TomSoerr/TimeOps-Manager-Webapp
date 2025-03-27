@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <HashRouter>
         <ScrollToTop />
         <div className="overflow-x-hidden overflow-y-auto">
-          <main className="font-sans pt-4 px-4 antialiased h-[calc(100vh-5rem)] lg:h-[100vh]  mx-auto bg-slate-50 max-w-3xl lg:pl-23">
+          <main className="font-sans pt-4 px-2 antialiased h-[calc(100vh-5rem)] lg:h-[100vh]  mx-auto bg-slate-50 max-w-3xl lg:pl-23">
             <Routes>
               <Route
                 path="/"
