@@ -27,6 +27,18 @@ interface UrlToken {
   token: string;
 }
 
+export interface analyticsItem {
+  label: string;
+  value: string;
+}
+
+export interface AnalyticsData {
+  day: analyticsItem[];
+  week: analyticsItem[];
+  month: analyticsItem[];
+  tags: analyticsItem[];
+}
+
 // Define the database
 export class TimeOpsDB extends Dexie {
   entries!: Table<Entry>;
@@ -474,6 +486,32 @@ export class TimeOpsDB extends Dexie {
     }
   }
 
+  async getAnalytics(): Promise<AnalyticsData> {
+    const { url, token } = this.getUrlToken();
+
+    try {
+      const response = await fetch(`${url}${API_BASE_URL}/analytics`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-UTC-Offset': `${offset}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch analytics data: ${response.statusText}`,
+        );
+      }
+
+      const data = await response.json();
+      return data as AnalyticsData;
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+      throw error;
+    }
+  }
+
   getToken(): string {
     return localStorage.getItem('token') || '';
   }
@@ -489,7 +527,7 @@ export class TimeOpsDB extends Dexie {
   }
 
   async createToken(): Promise<void> {
-    const { url } = this.getUrlToken();
+    const url = this.getUrl();
 
     try {
       const response = await fetch(`${url}${API_BASE_URL}/user`, {
