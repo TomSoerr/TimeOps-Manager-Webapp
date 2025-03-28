@@ -1,24 +1,26 @@
 import Dexie, { Table } from 'dexie';
 import Color from '../types/color.types';
-import TimeEntry from '../types/database.types';
+import TimeEntry, { TimeRunningEntry } from '../types/database.types';
 import { API_BASE_URL } from '../vars';
 import { offset } from '../utils/time';
 
-// Define interfaces for the tables
 export interface TagEntry {
   id: number;
   name: string;
   color: Color['color'];
 }
 
-export interface Entry {
+export interface Entry extends Running {
+  endTimeUtc: number;
   id?: number | undefined;
   remoteId?: number;
+}
+
+export interface Running {
   name: string;
   synced: 0 | 1;
   tagId: number;
   startTimeUtc: number;
-  endTimeUtc: number;
   msg: string;
 }
 
@@ -43,12 +45,14 @@ export interface AnalyticsData {
 export class TimeOpsDB extends Dexie {
   entries!: Table<Entry>;
   tags!: Table<TagEntry>;
+  running!: Table<Running>;
 
   constructor() {
     super('timeOpsDB');
     this.version(1).stores({
       tags: 'id, name, color',
       entries: '++id, remoteId, tagId, synced, startTimeUtc, endTimeUtc',
+      running: '',
     });
   }
 
@@ -388,6 +392,40 @@ export class TimeOpsDB extends Dexie {
         id: tag.id,
       }),
     );
+  }
+
+  async setRunning(running: Running): Promise<void> {
+    console.log(running);
+    await this.running.put(running, 'current');
+  }
+
+  async getRunning(): Promise<TimeRunningEntry | undefined> {
+    const running = await this.running.get('current');
+    if (!running) {
+      return undefined;
+    }
+
+    // Fetch the associated tag to get name and color
+    const tag = await this.tags.get(running.tagId);
+    if (!tag) {
+      console.warn(`Tag with id ${running.tagId} not found for running entry`);
+      return undefined;
+    }
+
+    return {
+      name: running.name,
+      synced: running.synced === 1,
+      tagId: running.tagId,
+      tagName: tag.name,
+      tagColor: tag.color,
+      startTimeUtc: running.startTimeUtc,
+      endTimeUtc: 0, // No end time for running entry
+      msg: running.msg,
+    };
+  }
+
+  async clearRunning(): Promise<void> {
+    await this.running.delete('current');
   }
 
   async setTag(entry: TagEntry): Promise<void> {

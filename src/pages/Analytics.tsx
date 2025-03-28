@@ -33,26 +33,26 @@ const Analytics: React.FC = () => {
 
       <Table
         headline="Day"
-        key="Weekday"
+        label="Weekday"
         value="Hours"
         data={analyticsData.day}
       />
 
       <Table
         headline="Weeks"
-        key="Week start"
+        label="Week start"
         value="Hours"
         data={analyticsData.week}
       />
       <Table
         headline="Months"
-        key="Month"
+        label="Month"
         value="Hours"
         data={analyticsData.month}
       />
       <Table
         headline="Tags"
-        key="Tags"
+        label="Tags"
         value="Hours"
         data={analyticsData.tags}
       />
