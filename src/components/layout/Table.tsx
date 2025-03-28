@@ -3,12 +3,17 @@ import { analyticsItem } from '../../database/db';
 
 interface Props {
   data: analyticsItem[];
-  key: string;
+  label: string;
   value: string;
   headline: string;
 }
 
-export const Table: React.FC<Props> = ({ key, value, data, headline }) => {
+export const Table: React.FC<Props> = ({
+  label: key,
+  value,
+  data,
+  headline,
+}) => {
   return (
     <>
       <h2 className="text-xl font-semibold mt-4 mb-2">{headline}</h2>

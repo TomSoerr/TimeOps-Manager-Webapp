@@ -4,9 +4,9 @@ import { Section } from '../components/layout/Section';
 import { FabAdd } from '../components/common/FabAdd';
 import { FabStart } from '../components/common/FabStart';
 import { createEntry } from '../utils/entryToCard.tsx';
-import TimeEntry from '../types/database.types';
+import TimeEntry, { TimeRunningEntry } from '../types/database.types';
 import { Modal } from './Modal';
-import { db, Entry, TagEntry } from '../database/db';
+import { db, TagEntry } from '../database/db';
 import {
   sumUpHours,
   start,
@@ -24,11 +24,13 @@ import {
 } from '../utils/groupEntries.ts';
 import { FormData } from './Modal';
 import { ANIMATION_LENGTH } from '../vars.ts';
+import { RunningEntry } from '../components/common/Running.tsx';
 
 const Timer: React.FC = () => {
   const { isOnline } = useConnection();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [tags, setTags] = useState<TagEntry[]>([]);
+  const [running, setRunning] = useState<TimeRunningEntry | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
@@ -51,6 +53,16 @@ const Timer: React.FC = () => {
     }
   }, []);
 
+  const loadRunning = useCallback(async () => {
+    try {
+      const running = await db.getRunning();
+      console.log('59 retured running', running);
+      setRunning(running);
+    } catch (error) {
+      console.error('Failed to load running entry:', error);
+    }
+  }, []);
+
   // Combined data loading function
   const handleDataUpdate = useCallback(async () => {
     console.info('Data updated, isOnline:', isOnline);
@@ -62,13 +74,13 @@ const Timer: React.FC = () => {
       }
 
       // Load data in parallel for better performance
-      await Promise.all([loadTags(), loadEntries()]);
+      await Promise.all([loadTags(), loadEntries(), loadRunning()]);
     } catch (error) {
       console.error('Error updating data:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [isOnline, loadEntries, loadTags]);
+  }, [isOnline, loadEntries, loadTags, loadRunning]);
 
   // Handle form actions
   const handleAddClick = useCallback(() => {
@@ -77,7 +89,6 @@ const Timer: React.FC = () => {
     const now = new Date();
     const twoHoursAgo = new Date(Date.now() - 7200000);
 
-    console.log('add called');
     setFormData({
       name: '',
       startDate: twoHoursAgo.toISOString().split('T')[0],
@@ -100,6 +111,60 @@ const Timer: React.FC = () => {
     });
   }, []);
 
+  const handleAddRunningClick = useCallback(async () => {
+    if (tags.length === 0) return;
+
+    try {
+      if (!running) {
+        await db.setRunning({
+          name: 'Running Entry',
+          synced: 0,
+          tagId: tags[0]?.id || 0,
+          startTimeUtc: Math.round(Date.now() / 1000),
+          msg: '',
+        });
+      } else {
+        const runningEntry = await db.getRunning();
+        if (runningEntry) {
+          await db.setEntry({
+            name: runningEntry.name,
+            synced: runningEntry.synced ? 1 : 0,
+            tagId: runningEntry.tagId,
+            startTimeUtc: runningEntry.startTimeUtc,
+            endTimeUtc: Math.round(Date.now() / 1000),
+            msg: runningEntry.msg,
+          });
+
+          await db.clearRunning();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to submit running entry:', error);
+    }
+
+    if (isOnline) {
+      if (await db.updateRemote()) {
+        loadEntries();
+        loadRunning();
+      }
+    } else {
+      loadEntries();
+      loadRunning();
+    }
+  }, [tags, loadRunning, loadEntries, isOnline]);
+
+  const handleEditRunningClick = useCallback(
+    (entry: TimeRunningEntry) => {
+      setFormData({
+        tagId: entry.tagId,
+        name: entry.name,
+        startTime: epochToHHMM(entry.startTimeUtc),
+        startDate: epochToYYMMDD(entry.startTimeUtc),
+      });
+    },
+    [loadRunning, loadEntries, isOnline],
+  );
+
   const handleClose = useCallback(() => {
     setFormData(undefined);
   }, []);
@@ -116,34 +181,49 @@ const Timer: React.FC = () => {
       const formDataCopy = { ...formData };
       setFormData(undefined); // Close modal
 
-      const newEntry: Entry = {
-        id: formDataCopy.id || undefined,
-        name: formDataCopy.name,
-        tagId: formDataCopy.tagId,
-        synced: 0, // because new
-        startTimeUtc: dateToEpoch(
-          formDataCopy.startDate,
-          formDataCopy.startTime,
-        ),
-        endTimeUtc: dateToEpoch(formDataCopy.endDate, formDataCopy.endTime),
-        msg: '',
-      };
-
       try {
-        await db.setEntry(newEntry);
+        if (formDataCopy.endDate && formDataCopy.endTime) {
+          await db.setEntry({
+            id: formDataCopy.id || undefined,
+            name: formDataCopy.name,
+            tagId: formDataCopy.tagId,
+            startTimeUtc: dateToEpoch(
+              formDataCopy.startDate,
+              formDataCopy.startTime,
+            ),
+            endTimeUtc: dateToEpoch(formDataCopy.endDate, formDataCopy.endTime),
+            synced: 0,
+            msg: '',
+          });
+        } else {
+          await db.setRunning({
+            name: formDataCopy.name,
+            tagId: formDataCopy.tagId,
+            startTimeUtc: dateToEpoch(
+              formDataCopy.startDate,
+              formDataCopy.startTime,
+            ),
+            synced: 0,
+            msg: '',
+          });
+        }
 
         setTimeout(async () => {
           if (isOnline) {
-            if (await db.updateRemote()) loadEntries();
+            if (await db.updateRemote()) {
+              loadEntries();
+              loadRunning();
+            }
           } else {
             loadEntries();
+            loadRunning();
           }
         }, ANIMATION_LENGTH);
       } catch (error) {
         console.error('Failed to submit entry:', error);
       }
     },
-    [formData, isOnline, loadEntries],
+    [formData, isOnline, loadEntries, loadRunning],
   );
 
   const createDate = (date: number): string => {
@@ -196,12 +276,30 @@ const Timer: React.FC = () => {
     [weekGroups],
   );
 
-  // if (isLoading) {
-  //   return <div className="p-4">Loading...</div>;
-  // }
+  if (isLoading) {
+    return <div className="p-4">Loading...</div>;
+  }
 
   return (
     <>
+      {running ?
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            Running Entry
+          </h2>
+          <RunningEntry
+            name={running.name}
+            timespan={`${epochToHHMM(running.startTimeUtc)} - now`}
+            startTimeUTC={running.startTimeUtc}
+            synced={running.synced ? true : false}
+            tag={running.tagName}
+            color={running.tagColor}
+            onClick={() => handleEditRunningClick(running)}
+            msg={running.msg}
+          />
+        </div>
+      : ''}
+
       {weekGroupsEntries.map(([weekIndex, [weekTimestamp, dayGroups]]) => {
         const dayGroupArray = Object.values(dayGroups);
         const weekEntries = dayGroupArray.flatMap(
@@ -242,7 +340,10 @@ const Timer: React.FC = () => {
 
       <div className="fixed bottom-22 lg:bottom-4 lg:right-[calc((100vw-48rem)/2)] right-4 flex gap-2">
         <FabAdd onClick={handleAddClick} />
-        <FabStart />
+        <FabStart
+          onClick={handleAddRunningClick}
+          running={running}
+        />
       </div>
 
       <Modal
