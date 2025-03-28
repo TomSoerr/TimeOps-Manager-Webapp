@@ -4,7 +4,7 @@ import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Select } from '../components/common/Select';
 import { ANIMATION_LENGTH } from '../vars';
-import { TagEntry } from '../database/db';
+import { TagEntry } from '../database';
 
 interface Props {
   formData: undefined | FormData;

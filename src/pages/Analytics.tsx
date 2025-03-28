@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useConnection } from '../context/ConnectionContext';
-import { db, AnalyticsData } from '../database/db';
+import { AnalyticsData, getAnalytics } from '../database/index';
 import { Table } from '../components/layout/Table';
 
 const Analytics: React.FC = () => {
@@ -13,7 +13,7 @@ const Analytics: React.FC = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const data = await db.getAnalytics();
+        const data = await getAnalytics();
         console.info(data);
         setAnalyticsData(data);
       } catch (err) {

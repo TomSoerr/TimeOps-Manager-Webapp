@@ -1,4 +1,4 @@
-import { db } from '../database/db';
+import { getUrl, getToken } from '../database/index';
 import { EventSource } from 'eventsource';
 import { API_BASE_URL } from '../vars';
 
@@ -22,7 +22,7 @@ export const setupSSEConnection = (
     const TIMEOUT = 5000;
 
     try {
-      if (!db.getUrl() || !db.getToken()) {
+      if (!getUrl() || !getToken()) {
         console.info('Missing URL or token, will retry in 5 seconds');
         setOnlineStatus(false);
 
@@ -39,7 +39,7 @@ export const setupSSEConnection = (
       /**
        * If credentials are set in localStorage try to connect to api
        */
-      const apiUrl = `${db.getUrl()}${API_BASE_URL}/events`;
+      const apiUrl = `${getUrl()}${API_BASE_URL}/events`;
 
       // Create EventSource with fetch option to include Authorization header
       eventSource = new EventSource(apiUrl, {
@@ -49,7 +49,7 @@ export const setupSSEConnection = (
             ...init,
             headers: {
               ...init?.headers,
-              Authorization: `Bearer ${db.getToken()}`,
+              Authorization: `Bearer ${getToken()}`,
             },
           }),
       });
