@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Input } from './Input';
 import { Select } from './Select';
 import { Button } from './Button';
-import { TagEntry, db } from '../../database/db';
+import { TagEntry, setTag } from '../../database/index';
 import { Tag } from './Tag';
 import Color, { colors } from '../../types/color.types';
 
@@ -57,7 +57,7 @@ export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
 
       try {
         setIsSubmitting(true);
-        await db.setTag(formData);
+        await setTag(formData);
         setEdited(false);
 
         if (add) {

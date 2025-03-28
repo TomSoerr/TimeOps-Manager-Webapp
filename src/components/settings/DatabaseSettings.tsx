@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { InputFile } from '../common/InputFile';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
 import { Button } from '../common/Button';
-import { db } from '../../database/db';
+import { deleteRemote, importFile, exportDatabase } from '../../database/index';
 
 const DatabaseSettings: React.FC = () => {
   const [msg, setMsg] = useState<string>('');
@@ -17,7 +17,7 @@ const DatabaseSettings: React.FC = () => {
     }
 
     try {
-      await db.importFile(file);
+      await importFile(file);
       setMsg('Database imported successfully!');
     } catch (error) {
       console.error('Error importing database:', error);
@@ -27,7 +27,7 @@ const DatabaseSettings: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      await db.exportDatabase();
+      await exportDatabase();
     } catch (error) {
       console.error('Error exporting database:', error);
     }
@@ -39,7 +39,7 @@ const DatabaseSettings: React.FC = () => {
         uiType="secondary"
         text="Delete DB"
         type="button"
-        onClick={() => db.deleteRemote()}
+        onClick={() => deleteRemote()}
       />
       <SHeadline>Import/Export</SHeadline>
 

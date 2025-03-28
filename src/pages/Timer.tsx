@@ -6,7 +6,17 @@ import { FabStart } from '../components/common/FabStart';
 import { createEntry } from '../utils/entryToCard.tsx';
 import TimeEntry, { TimeRunningEntry } from '../types/database.types';
 import { Modal } from './Modal';
-import { db, TagEntry } from '../database/db';
+import {
+  TagEntry,
+  getAllTags as getAllTag,
+  updateLocal,
+  getRunning,
+  getAllEntriesWithTags,
+  setEntry,
+  clearRunning,
+  updateRemote,
+  setRunning,
+} from '../database/index';
 import {
   sumUpHours,
   start,
@@ -30,14 +40,14 @@ const Timer: React.FC = () => {
   const { isOnline } = useConnection();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [tags, setTags] = useState<TagEntry[]>([]);
-  const [running, setRunning] = useState<TimeRunningEntry | undefined>();
+  const [running, setRunningState] = useState<TimeRunningEntry | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
   // Memoize functions to prevent unnecessary re-renders
   const loadEntries = useCallback(async () => {
     try {
-      const entriesWithTags = await db.getAllEntriesWithTags();
+      const entriesWithTags = await getAllEntriesWithTags();
       setEntries(entriesWithTags);
     } catch (error) {
       console.error('Failed to load entries:', error);
@@ -46,7 +56,7 @@ const Timer: React.FC = () => {
 
   const loadTags = useCallback(async () => {
     try {
-      const tags = await db.getAllTag();
+      const tags = await getAllTag();
       setTags(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
@@ -55,9 +65,9 @@ const Timer: React.FC = () => {
 
   const loadRunning = useCallback(async () => {
     try {
-      const running = await db.getRunning();
+      const running = await getRunning();
       console.log('59 retured running', running);
-      setRunning(running);
+      setRunningState(running);
     } catch (error) {
       console.error('Failed to load running entry:', error);
     }
@@ -70,7 +80,7 @@ const Timer: React.FC = () => {
 
     try {
       if (isOnline) {
-        await db.updateLocal();
+        await updateLocal();
       }
 
       // Load data in parallel for better performance
@@ -116,7 +126,7 @@ const Timer: React.FC = () => {
 
     try {
       if (!running) {
-        await db.setRunning({
+        await setRunning({
           name: 'Running Entry',
           synced: 0,
           tagId: tags[0]?.id || 0,
@@ -124,9 +134,9 @@ const Timer: React.FC = () => {
           msg: '',
         });
       } else {
-        const runningEntry = await db.getRunning();
+        const runningEntry = await getRunning();
         if (runningEntry) {
-          await db.setEntry({
+          await setEntry({
             name: runningEntry.name,
             synced: runningEntry.synced ? 1 : 0,
             tagId: runningEntry.tagId,
@@ -135,7 +145,7 @@ const Timer: React.FC = () => {
             msg: runningEntry.msg,
           });
 
-          await db.clearRunning();
+          await clearRunning();
         }
       }
     } catch (error) {
@@ -143,7 +153,7 @@ const Timer: React.FC = () => {
     }
 
     if (isOnline) {
-      if (await db.updateRemote()) {
+      if (await updateRemote()) {
         loadEntries();
         loadRunning();
       }
@@ -183,7 +193,7 @@ const Timer: React.FC = () => {
 
       try {
         if (formDataCopy.endDate && formDataCopy.endTime) {
-          await db.setEntry({
+          await setEntry({
             id: formDataCopy.id || undefined,
             name: formDataCopy.name,
             tagId: formDataCopy.tagId,
@@ -196,7 +206,7 @@ const Timer: React.FC = () => {
             msg: '',
           });
         } else {
-          await db.setRunning({
+          await setRunning({
             name: formDataCopy.name,
             tagId: formDataCopy.tagId,
             startTimeUtc: dateToEpoch(
@@ -210,7 +220,7 @@ const Timer: React.FC = () => {
 
         setTimeout(async () => {
           if (isOnline) {
-            if (await db.updateRemote()) {
+            if (await updateRemote()) {
               loadEntries();
               loadRunning();
             }
@@ -240,7 +250,7 @@ const Timer: React.FC = () => {
     const runUpdates = async () => {
       try {
         await handleDataUpdate();
-        if (await db.updateRemote()) loadEntries();
+        if (await updateRemote()) loadEntries();
       } catch (error) {
         console.error('Error during updates:', error);
       }

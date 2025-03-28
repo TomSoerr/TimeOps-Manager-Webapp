@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { TagEntry } from '../../database/db';
-import { db } from '../../database/db';
+import { TagEntry, getAllTags, updateLocal } from '../../database/index';
 import { EditTags } from '../../components/common/EditTags';
 import { TagForm } from '../../components/common/TagForm';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
@@ -12,7 +11,7 @@ const TagSettings: React.FC = () => {
 
   const loadTags = useCallback(async () => {
     try {
-      const tags = await db.getAllTag();
+      const tags = await getAllTags();
       setTags(tags);
     } catch (error) {
       console.error('Failed to load tags:', error);
@@ -23,7 +22,7 @@ const TagSettings: React.FC = () => {
     console.info('Data updated, isOnline:', isOnline);
 
     try {
-      await db.updateLocal();
+      await updateLocal();
       await loadTags();
     } catch (error) {
       console.error('Error updating data:', error);

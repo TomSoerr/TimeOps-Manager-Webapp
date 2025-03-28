@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { db } from '../../database/db';
+import {
+  getToken,
+  getUrl,
+  updateToken,
+  updateUrl,
+  createToken,
+} from '../../database/index';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
@@ -29,7 +35,7 @@ const ApiSettings: React.FC = () => {
   );
 
   const updateTokenInState = useCallback(() => {
-    const token = db.getToken();
+    const token = getToken();
     setSettings((prev) => ({
       ...prev,
       token,
@@ -38,7 +44,7 @@ const ApiSettings: React.FC = () => {
   }, []);
 
   const updateUrlInState = useCallback(() => {
-    const url = db.getUrl();
+    const url = getUrl();
     setSettings((prev) => ({
       ...prev,
       url,
@@ -47,7 +53,7 @@ const ApiSettings: React.FC = () => {
   }, []);
 
   const handleUpdateToken = useCallback(() => {
-    db.updateToken(settings.token);
+    updateToken(settings.token);
     updateTokenInState();
   }, [settings.token, updateTokenInState]);
 
@@ -58,7 +64,7 @@ const ApiSettings: React.FC = () => {
         isLoading: true,
         error: 'Loading Token...',
       }));
-      await db.createToken();
+      await createToken();
       updateTokenInState();
       setSettings((prev) => ({ ...prev, isLoading: false, error: '' }));
     } catch (error) {
@@ -71,7 +77,7 @@ const ApiSettings: React.FC = () => {
   }, [updateTokenInState]);
 
   const handleUpdateUrl = useCallback(() => {
-    db.updateUrl(settings.url);
+    updateUrl(settings.url);
     updateUrlInState();
   }, [settings.url, updateUrlInState]);
 
