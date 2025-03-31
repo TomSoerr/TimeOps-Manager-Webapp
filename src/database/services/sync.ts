@@ -5,27 +5,35 @@ import { API_BASE_URL } from '../../vars';
 import { offset } from '../../utils/time';
 
 export async function updateLocal(): Promise<void> {
+  console.warn('update local');
   const { url, token } = getUrlToken();
 
   try {
     // Fetch entries and tags from the API
-    const [entriesResponse, tagsResponse] = await Promise.all([
-      fetch(`${url}${API_BASE_URL}/entries`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }),
-      fetch(`${url}${API_BASE_URL}/tags`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }),
-    ]);
-
+    const [entriesResponse, tagsResponse, runningEntryResponse] =
+      await Promise.all([
+        fetch(`${url}${API_BASE_URL}/entries`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${url}${API_BASE_URL}/tags`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${url}${API_BASE_URL}/entries/running`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+      ]);
     if (!entriesResponse.ok) {
       throw new Error(`Failed to fetch entries: ${entriesResponse.statusText}`);
     }
@@ -34,11 +42,19 @@ export async function updateLocal(): Promise<void> {
       throw new Error(`Failed to fetch tags: ${tagsResponse.statusText}`);
     }
 
+    if (!runningEntryResponse.ok) {
+      throw new Error(
+        `Failed to fetch running entry: ${runningEntryResponse.statusText}`,
+      );
+    }
+
     const entriesFromApi = (await entriesResponse.json()).entries;
     const tagsFromApi = (await tagsResponse.json()).tags;
+    const runningEntryFromApi = (await runningEntryResponse.json())
+      .runningEntry;
 
     // Update the Dexie database
-    await db.transaction('rw', db.entries, db.tags, async () => {
+    await db.transaction('rw', db.entries, db.tags, db.running, async () => {
       // Keep unsynced entries (synced === false)
       const unsyncedEntries = await db.entries
         .where('synced')
@@ -71,6 +87,25 @@ export async function updateLocal(): Promise<void> {
         }),
       );
       await db.tags.bulkAdd(tagsToAdd);
+
+      const currentRunningEntry = await db.running.get('current');
+
+      if (runningEntryFromApi) {
+        await db.running.put(
+          {
+            name: runningEntryFromApi.name,
+            tagId: runningEntryFromApi.tagId,
+            startTimeUtc: runningEntryFromApi.startTimeUtc,
+            synced: 1,
+            msg: '',
+          },
+          'current',
+        );
+      }
+
+      if (currentRunningEntry && !runningEntryFromApi) {
+        await db.running.delete('current');
+      }
     });
   } catch (error) {
     console.error('Error updating local database:', error);
@@ -79,6 +114,8 @@ export async function updateLocal(): Promise<void> {
 }
 
 export async function updateRemote(): Promise<boolean> {
+  console.warn('Update remote called');
+
   const { url, token } = getUrlToken();
   let unsyncableChange: boolean = false;
   let atLeastOneSync: boolean = false;
@@ -90,7 +127,10 @@ export async function updateRemote(): Promise<boolean> {
       .equals(0)
       .toArray();
 
-    if (unsyncedEntries.length === 0) return false;
+    const runningEntry = await db.running.get('current');
+    const hasUnsyncedRunning = runningEntry && runningEntry.synced === 0;
+
+    if (unsyncedEntries.length === 0 && !hasUnsyncedRunning) return false;
 
     // Process each unsynced entry
     for (let i = 0; i < unsyncedEntries.length; i++) {
@@ -176,6 +216,55 @@ export async function updateRemote(): Promise<boolean> {
           console.warn('Could not delete local entry - ID is undefined');
         }
       }
+    }
+
+    if (hasUnsyncedRunning) {
+      console.log('sync running: ', runningEntry.startTimeUtc);
+      const response = await fetch(`${url}${API_BASE_URL}/entries/running`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: runningEntry.name,
+          startTimeUtc: runningEntry.startTimeUtc,
+          tagId: runningEntry.tagId,
+        }),
+      });
+
+      // Handle validation error
+      if (response.status === 400) {
+        const errorData = await response.clone().json();
+        await db.running.update('current', {
+          msg: errorData.errors?.[0]?.msg || 'Validation failed',
+        });
+        unsyncableChange = true;
+      } else if (!response.ok) {
+        throw new Error(`Failed to sync running entry: ${response.statusText}`);
+      } else {
+        // Mark as synced if successful
+        await db.running.update('current', { synced: 1 });
+        atLeastOneSync = true;
+      }
+    } else {
+      // If there's no running entry on client or it's already synced,
+      // delete any running entry from the server to maintain consistency
+      const response = await fetch(`${url}${API_BASE_URL}/entries/running`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error(
+          `Failed to delete remote running entry: ${response.statusText}`,
+        );
+      }
+
+      atLeastOneSync = true;
     }
   } catch (error) {
     console.error('Error updating remote database:', error);

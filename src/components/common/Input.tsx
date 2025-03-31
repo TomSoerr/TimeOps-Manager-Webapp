@@ -33,6 +33,7 @@ export const Input: React.FC<Props> = ({
       <input
         type={type}
         id={id}
+        step={type === 'time' ? 1 : ''}
         value={value}
         onChange={onChange}
         className="text-slate-800 w-full text-base border-0 outline-0"

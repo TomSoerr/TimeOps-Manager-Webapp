@@ -31,7 +31,7 @@ export const sumUpHours = (entries: TimeEntry[]) => {
 };
 
 export const formatTime = (date: Date): string => {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
 };
 
 export const epochToHHMM = (epoch: number): string => {
@@ -46,13 +46,14 @@ export const epochToYYMMDD = (epoch: number): string => {
 
 export const dateToEpoch = (date: string, time: string): number => {
   const [year, month, day] = date.split('-');
-  const [hours, minutes] = time.split(':');
+  const [hours, minutes, seconds = '0'] = time.split(':');
   const jsDate = new Date();
   jsDate.setFullYear(+year);
   jsDate.setMonth(+month - 1);
   jsDate.setDate(+day);
   jsDate.setHours(+hours);
   jsDate.setMinutes(+minutes);
+  jsDate.setSeconds(+seconds);
   return Math.floor(jsDate.getTime() / 1000);
 };
 
