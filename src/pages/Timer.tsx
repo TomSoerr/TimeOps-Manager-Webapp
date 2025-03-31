@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useConnection } from '../context/ConnectionContext';
 import { Section } from '../components/layout/Section';
-import { FabAdd } from '../components/common/FabAdd';
-import { FabStart } from '../components/common/FabStart';
+import { FabAdd } from '../ui/buttons/FabAdd.tsx';
+import { FabStart } from '../ui/buttons/FabStart.tsx';
 import { createEntry } from '../utils/entryToCard.tsx';
 import TimeEntry, { TimeRunningEntry } from '../types/database.types';
 import { Modal } from './Modal';

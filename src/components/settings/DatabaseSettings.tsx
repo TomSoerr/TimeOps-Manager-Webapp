@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { InputFile } from '../common/InputFile';
+import { InputFile } from '../../ui/inputs/InputFile';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
-import { Button } from '../common/Button';
+import { Button } from '../../ui/buttons/Button';
 import { deleteRemote, importFile, exportDatabase } from '../../database/index';
 
 const DatabaseSettings: React.FC = () => {

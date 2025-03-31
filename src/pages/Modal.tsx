@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Icon } from '../components/common/Icon';
-import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
-import { Select } from '../components/common/Select';
+import { Icon } from '../ui/Icon';
+import { Input } from '../ui/inputs/Input';
+import { Button } from '../ui/buttons/Button';
+import { Select } from '../ui/inputs/Select';
 import { ANIMATION_LENGTH } from '../vars';
 import { TagEntry } from '../database';
 

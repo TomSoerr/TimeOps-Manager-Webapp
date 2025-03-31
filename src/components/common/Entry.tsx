@@ -1,19 +1,38 @@
 import React from 'react';
 import { Card } from '../layout/Card';
-import { Tag } from './Tag';
+import { Tag } from '../../ui/Tag';
 import Color from '../../types/color.types';
 
+/**
+ * Props for the Entry component
+ * Represents a time entry in the time-tracking application
+ */
 interface Props {
+  /** Name/title of the time entry */
   name: string;
+  /** Whether the entry has been synchronized with the server */
   synced: boolean;
+  /** Name of the associated tag/project */
   tag: string;
+  /** Formatted time string (start time or duration) */
   time: string;
+  /** Time span representation (e.g., "2h 30m" or time range) */
   timespan: string;
+  /** Color code associated with the tag */
   color: Color['color'];
+  /** Click handler for when the entry is selected */
   onClick: () => void;
-  msg: string;
+  /** Error message if synchronization failed */
+  errorMessage: string;
 }
 
+/**
+ * Entry component displays a time tracking entry card.
+ * Shows the entry name, time information, associated tag, and sync status.
+ * Displays error messages if synchronization failed.
+ *
+ * @returns A clickable card containing the time entry details
+ */
 export const Entry: React.FC<Props> = ({
   name,
   synced,
@@ -22,7 +41,7 @@ export const Entry: React.FC<Props> = ({
   color,
   onClick,
   timespan,
-  msg,
+  errorMessage: msg,
 }) => {
   return (
     <Card onClick={onClick}>

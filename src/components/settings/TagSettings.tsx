@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TagEntry, getAllTags, updateLocal } from '../../database/index';
-import { EditTags } from '../../components/common/EditTags';
-import { TagForm } from '../../components/common/TagForm';
+import { EditTags } from '../../features/tags/components/EditTags';
+import { TagForm } from '../../features/tags/components/TagForm';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
 import { useConnection } from '../../context/ConnectionContext';
 

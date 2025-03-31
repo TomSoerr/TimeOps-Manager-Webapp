@@ -1,5 +1,17 @@
 import React from 'react';
 
+/**
+ * Props interface for the Input component
+ * @interface Props
+ * @property {string} label - Label text displayed above the input
+ * @property {string} id - HTML id attribute for the input element
+ * @property {(e: React.ChangeEvent<HTMLInputElement>) => void} onChange - Event handler for input changes
+ * @property {string} value - Current value of the input
+ * @property {'time' | 'date' | 'text' | 'url'} type - The input type attribute
+ * @property {string} [min] - Optional minimum value (for date/time inputs)
+ * @property {string} [max] - Optional maximum value (for date/time inputs)
+ * @property {boolean} [disabled=false] - Whether the input is disabled
+ */
 interface Props {
   label: string;
   id: string;
@@ -11,6 +23,18 @@ interface Props {
   disabled?: boolean;
 }
 
+/**
+ * Input component that provides styled form controls with floating labels
+ *
+ * Features:
+ * - Consistent styling with border and focus states
+ * - Floating label that sits above the input
+ * - Support for various input types
+ * - Validation state indicator (currently hidden by default)
+ *
+ * @param {Props} props - Component props
+ * @returns {JSX.Element} Styled input with floating label
+ */
 export const Input: React.FC<Props> = ({
   id,
   label,
