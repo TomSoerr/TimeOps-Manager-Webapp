@@ -1,29 +1,54 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Input } from './Input';
-import { Select } from './Select';
-import { Button } from './Button';
-import { TagEntry, setTag } from '../../database/index';
-import { Tag } from './Tag';
-import Color, { colors } from '../../types/color.types';
+import { Input } from '../../../ui/inputs/Input';
+import { Select } from '../../../ui/inputs/Select';
+import { Button } from '../../../ui/buttons/Button';
+import { TagEntry, setTag } from '../../../database/index';
+import { Tag } from '../../../ui/Tag';
+import Color, { colors } from '../../../types/color.types';
 
+/**
+ * Props for the TagForm component
+ * @interface TagFormProps
+ * @property {TagEntry} item - The tag entry to edit or use as a template for adding
+ * @property {boolean} [add] - Whether this form is being used to add a new tag
+ * @property {(errorMessage: string) => void} [onError] - Optional callback for error handling
+ */
 interface TagFormProps {
   item: TagEntry;
   add?: boolean;
+  onError?: (errorMessage: string) => void;
 }
 
-export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
+/**
+ * TagForm component that provides UI for creating or editing tag entries.
+ * Displays a form with name and color inputs, and a preview of the tag.
+ */
+export const TagForm: React.FC<TagFormProps> = ({ item, add, onError }) => {
+  /** State for the form data, initialized with the provided item */
   const [formData, setFormData] = useState<TagEntry>(item);
+
+  /** Tracks whether the form has been edited from its initial state */
   const [edited, setEdited] = useState<boolean>(false);
+
+  /** Tracks submission state to prevent duplicate submissions */
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  /** Local error message state for form validation errors */
   const [errorMsg, setErrorMsg] = useState<string>('');
 
-  // Memoize the selected color ID to avoid recalculating on every render
+  /**
+   * Memoized calculation of the selected color ID based on the color name
+   * Fallback to first color if the name doesn't match any available colors
+   */
   const selectedColorId = useMemo(
     () => colors.find((col) => col.name === formData.color)?.id || colors[0].id,
     [formData.color],
   );
 
-  // Handle name change with proper typing
+  /**
+   * Handles changes to the tag name input
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setEdited(true);
@@ -32,7 +57,10 @@ export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
     [],
   );
 
-  // Handle color change with proper typing
+  /**
+   * Handles changes to the color selection dropdown
+   * @param {React.ChangeEvent<HTMLSelectElement>} e - Select change event
+   */
   const handleColorChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setEdited(true);
@@ -48,7 +76,10 @@ export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
     [],
   );
 
-  // Handle form submission
+  /**
+   * Handles form submission, saving the tag to the database
+   * @param {React.FormEvent} e - Form submission event
+   */
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -78,11 +109,16 @@ export const TagForm: React.FC<TagFormProps> = ({ item, add }) => {
         }
 
         setErrorMsg(errorMessage);
+
+        // Use the parent's error handler if provided
+        if (onError) {
+          onError(errorMessage);
+        }
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, add, isSubmitting],
+    [formData, add, isSubmitting, onError],
   );
 
   return (

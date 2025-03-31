@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../layout/Card';
-import { Tag } from './Tag';
+import { Tag } from '../../ui/Tag';
 import Color from '../../types/color.types';
 import { offset } from '../../utils/time';
 

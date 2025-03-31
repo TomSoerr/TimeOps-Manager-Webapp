@@ -22,7 +22,7 @@ function createEntry(entry: TimeEntry, onClick: () => void): JSX.Element {
         tag={entry.tagName}
         time={formattedTime}
         color={entry.tagColor}
-        msg={entry.msg}
+        errorMessage={entry.msg}
         onClick={onClick}
         timespan={start + ' - ' + end}
       />

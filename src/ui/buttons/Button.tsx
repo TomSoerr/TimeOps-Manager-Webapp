@@ -1,5 +1,14 @@
 import React from 'react';
 
+/**
+ * Props for the Button component
+ * @interface Props
+ * @property {('primary'|'secondary')} uiType - Visual style of the button
+ * @property {string} text - Button label text
+ * @property {('submit'|'button')} type - HTML button type
+ * @property {() => void} [onClick] - Optional click handler function
+ * @property {boolean} [disabled=false] - Whether the button is disabled
+ */
 interface Props {
   uiType: 'primary' | 'secondary';
   text: string;
@@ -8,6 +17,14 @@ interface Props {
   disabled?: boolean;
 }
 
+/**
+ * Button component that provides consistent styling with primary/secondary variants.
+ * Primary buttons use indigo-500 background with light text.
+ * Secondary buttons use indigo-200 background with dark text.
+ *
+ * @param {Props} props - Component props
+ * @returns {JSX.Element} - Rendered button with appropriate styling
+ */
 export const Button: React.FC<Props> = ({
   type,
   onClick,

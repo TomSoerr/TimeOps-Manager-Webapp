@@ -1,6 +1,14 @@
 import React from 'react';
 import { useConnection } from '../../context/ConnectionContext';
 
+/**
+ * Status component displays the online/offline connection status indicator
+ * It renders a small pill with a cloud icon that changes based on connection state
+ *
+ * The component is positioned absolutely and adapts its position based on viewport size:
+ * - On mobile: positioned at the top of the navigation
+ * - On desktop: positioned at the right side of the navigation
+ */
 const Status: React.FC = () => {
   const { isOnline } = useConnection();
 

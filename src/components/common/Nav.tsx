@@ -1,6 +1,6 @@
 import { NavItem } from './NavItem';
 import React from 'react';
-import Status from './Status';
+import Status from '../../ui/feedback/Status';
 
 import { v4 as uuid } from 'uuid';
 

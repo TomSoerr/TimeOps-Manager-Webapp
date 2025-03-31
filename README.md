@@ -1,5 +1,11 @@
 # TimeOps-Manager-Webapp
 
+## TODO 
+
+- Fix error not showing up after entry error
+- scrollbar settings
+- readme
+
 ## WSL
 
 ```powershell

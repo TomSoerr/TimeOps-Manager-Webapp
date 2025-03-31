@@ -7,8 +7,8 @@ import {
   createToken,
 } from '../../database/index';
 import { SettingsSection, SHeadline } from '../layout/SettingsSection';
-import { Input } from '../common/Input';
-import { Button } from '../common/Button';
+import { Input } from '../../ui/inputs/Input';
+import { Button } from '../../ui/buttons/Button';
 
 const ApiSettings: React.FC = () => {
   const [settings, setSettings] = useState({
