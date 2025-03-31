@@ -40,7 +40,9 @@ const Timer: React.FC = () => {
   const { isOnline } = useConnection();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [tags, setTags] = useState<TagEntry[]>([]);
-  const [running, setRunningState] = useState<TimeRunningEntry | undefined>();
+  const [runningState, setRunningState] = useState<
+    TimeRunningEntry | undefined
+  >();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [formData, setFormData] = useState<FormData | undefined>(undefined);
 
@@ -66,7 +68,6 @@ const Timer: React.FC = () => {
   const loadRunning = useCallback(async () => {
     try {
       const running = await getRunning();
-      console.log('59 retured running', running);
       setRunningState(running);
     } catch (error) {
       console.error('Failed to load running entry:', error);
@@ -125,28 +126,30 @@ const Timer: React.FC = () => {
     if (tags.length === 0) return;
 
     try {
-      if (!running) {
+      const runningEntry = await getRunning();
+
+      if (!runningEntry) {
         await setRunning({
           name: 'Running Entry',
           synced: 0,
           tagId: tags[0]?.id || 0,
-          startTimeUtc: Math.round(Date.now() / 1000),
+          startTimeUtc: Math.round(Date.now() / 1000) - 1, // -1 fix round err
           msg: '',
         });
+        console.warn('set running', runningEntry);
       } else {
-        const runningEntry = await getRunning();
-        if (runningEntry) {
-          await setEntry({
-            name: runningEntry.name,
-            synced: runningEntry.synced ? 1 : 0,
-            tagId: runningEntry.tagId,
-            startTimeUtc: runningEntry.startTimeUtc,
-            endTimeUtc: Math.round(Date.now() / 1000),
-            msg: runningEntry.msg,
-          });
+        console.warn('stop running');
 
-          await clearRunning();
-        }
+        await setEntry({
+          name: runningEntry.name,
+          synced: runningEntry.synced ? 1 : 0,
+          tagId: runningEntry.tagId,
+          startTimeUtc: runningEntry.startTimeUtc,
+          endTimeUtc: Math.round(Date.now() / 1000),
+          msg: runningEntry.msg,
+        });
+
+        await clearRunning();
       }
     } catch (error) {
       console.error('Failed to submit running entry:', error);
@@ -292,20 +295,20 @@ const Timer: React.FC = () => {
 
   return (
     <>
-      {running ?
+      {runningState ?
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-800 mb-2">
             Running Entry
           </h2>
           <RunningEntry
-            name={running.name}
-            timespan={`${epochToHHMM(running.startTimeUtc)} - now`}
-            startTimeUTC={running.startTimeUtc}
-            synced={running.synced ? true : false}
-            tag={running.tagName}
-            color={running.tagColor}
-            onClick={() => handleEditRunningClick(running)}
-            msg={running.msg}
+            name={runningState.name}
+            timespan={`${epochToHHMM(runningState.startTimeUtc)} - now`}
+            startTimeUTC={runningState.startTimeUtc}
+            synced={runningState.synced ? true : false}
+            tag={runningState.tagName}
+            color={runningState.tagColor}
+            onClick={() => handleEditRunningClick(runningState)}
+            msg={runningState.msg}
           />
         </div>
       : ''}
@@ -352,7 +355,7 @@ const Timer: React.FC = () => {
         <FabAdd onClick={handleAddClick} />
         <FabStart
           onClick={handleAddRunningClick}
-          running={running}
+          running={runningState}
         />
       </div>
 
