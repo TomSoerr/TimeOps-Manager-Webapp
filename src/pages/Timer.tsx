@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useConnection } from '../context/ConnectionContext';
-import { Section } from '../components/layout/Section';
+import { Section } from '../ui/layout/Section.tsx';
 import { FabAdd } from '../ui/buttons/FabAdd.tsx';
 import { FabStart } from '../ui/buttons/FabStart.tsx';
 import { createEntry } from '../utils/entryToCard.tsx';
@@ -34,7 +34,7 @@ import {
 } from '../utils/groupEntries.ts';
 import { FormData } from './Modal';
 import { ANIMATION_LENGTH } from '../vars.ts';
-import { RunningEntry } from '../components/common/Running.tsx';
+import { RunningEntry } from '../ui/entries/RunningEntry.tsx';
 
 const Timer: React.FC = () => {
   const { isOnline } = useConnection();
@@ -327,24 +327,26 @@ const Timer: React.FC = () => {
           >
             {Object.entries(dayGroups).map(
               ([dayIndex, [dayTimestamp, entries]]) => (
-                <Section
-                  subSection={true}
-                  key={`d-${dayIndex}`}
-                  headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
-                  hours={sumUpHours(entries)}
-                >
-                  {entries.map((entry) => (
-                    <React.Fragment
-                      key={
-                        (entry.remoteId ?
-                          `${entry.synced}-${entry.remoteId}`
-                        : false) || entry.id
-                      }
-                    >
-                      {createEntry(entry, () => handleEditClick(entry))}
-                    </React.Fragment>
-                  ))}
-                </Section>
+                <li key={`d-${dayIndex}`}>
+                  <Section
+                    subSection={true}
+                    key={`d-${dayIndex}`}
+                    headline={`${Weekday[new Date(dayTimestamp * 1000).getDay()]}, ${new Date(dayTimestamp * 1000).getDate()}th`}
+                    hours={sumUpHours(entries)}
+                  >
+                    {entries.map((entry) => (
+                      <React.Fragment
+                        key={
+                          (entry.remoteId ?
+                            `${entry.synced}-${entry.remoteId}`
+                          : false) || entry.id
+                        }
+                      >
+                        {createEntry(entry, () => handleEditClick(entry))}
+                      </React.Fragment>
+                    ))}
+                  </Section>
+                </li>
               ),
             )}
           </Section>

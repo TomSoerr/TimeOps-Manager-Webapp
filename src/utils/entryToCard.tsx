@@ -1,4 +1,4 @@
-import { Entry } from '../components/common/Entry';
+import { Entry } from '../ui/entries/Entry';
 import React, { JSX } from 'react';
 import TimeEntry from '../types/database.types';
 import { epochToHHMM } from './time';
