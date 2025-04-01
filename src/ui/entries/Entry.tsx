@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '../layout/Card';
-import { Tag } from '../../ui/Tag';
+import { Tag } from '../Tag';
 import Color from '../../types/color.types';
 
 /**
@@ -44,16 +44,19 @@ export const Entry: React.FC<Props> = ({
   errorMessage: msg,
 }) => {
   return (
-    <Card onClick={onClick}>
+    <Card
+      onClick={onClick}
+      ariaLabel={`Time entry: ${name}, ${timespan}, ${tag}`}
+    >
       <div className="flex">
         <div className="text-left flex-1 min-w-0">
           <h4 className="text-base leading-5 font-bold text-slate-800 mb-1 truncate">
             {name}
           </h4>
 
-          <p className="font-bold  text-slate-700 text-sm">
+          <p className="font-bold text-slate-700 text-sm">
             {time}{' '}
-            <span className="font-normal  text-slate-400 text-sm">
+            <span className="font-normal text-slate-400 text-sm">
               {timespan}
             </span>
           </p>

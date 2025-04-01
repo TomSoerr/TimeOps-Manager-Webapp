@@ -6,7 +6,7 @@ import {
   updateUrl,
   createToken,
 } from '../../database/index';
-import { SettingsSection, SHeadline } from '../layout/SettingsSection';
+import { SettingsSection, SHeadline } from '../../ui/layout/SettingsSection';
 import { Input } from '../../ui/inputs/Input';
 import { Button } from '../../ui/buttons/Button';
 

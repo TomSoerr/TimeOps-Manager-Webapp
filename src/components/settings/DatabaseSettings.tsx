@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { InputFile } from '../../ui/inputs/InputFile';
-import { SettingsSection, SHeadline } from '../layout/SettingsSection';
+import { SettingsSection, SHeadline } from '../../ui/layout/SettingsSection';
 import { Button } from '../../ui/buttons/Button';
 import { deleteRemote, importFile, exportDatabase } from '../../database/index';
 

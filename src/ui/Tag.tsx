@@ -29,9 +29,6 @@ interface Pill {
  *
  * This component implements a switch statement to handle different color variants because
  * Tailwind v4 doesn't support generating a safelist for dynamic class names.
- *
- * @param {Pill} props - The component props
- * @returns {JSX.Element} - Styled wrapper div with appropriate color classes
  */
 const Pill: React.FC<Pill> = ({ color, children }) => {
   switch (color) {

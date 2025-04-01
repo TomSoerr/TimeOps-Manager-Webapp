@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { TagEntry } from '../../../types/tags';
-import { TAG_CONSTANTS } from '../../../constants/tags';
+import { TagEntry } from '../../types/tags';
+import { TAG_CONSTANTS } from '../../constants/tags';
 import { TagForm } from './TagForm';
-import { Select } from '../../../ui/inputs/Select';
+import { Select } from '../../ui/inputs/Select';
 
 /**
  * Props for the EditTags component

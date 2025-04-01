@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { Nav } from './components/common/Nav';
+import { Nav } from './ui/navigation/Nav';
 import { HashRouter, Routes, Route } from 'react-router';
 import ScrollToTop from './utils/ScrollToTop';
 import { ConnectionProvider } from './context/ConnectionContext';
 
 import Timer from './pages/Timer';
-import Analytics from './pages/Analytics';
+import Analytics from './features/analytics/Analytics';
 import Settings from './pages/Settings';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Input } from '../../../ui/inputs/Input';
-import { Select } from '../../../ui/inputs/Select';
-import { Button } from '../../../ui/buttons/Button';
-import { TagEntry, setTag } from '../../../database/index';
-import { Tag } from '../../../ui/Tag';
-import Color, { colors } from '../../../types/color.types';
+import { Input } from '../../ui/inputs/Input';
+import { Select } from '../../ui/inputs/Select';
+import { Button } from '../../ui/buttons/Button';
+import { TagEntry, setTag } from '../../database/index';
+import { Tag } from '../../ui/Tag';
+import Color, { colors } from '../../types/color.types';
 
 /**
  * Props for the TagForm component

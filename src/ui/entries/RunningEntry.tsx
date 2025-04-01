@@ -1,20 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../layout/Card';
-import { Tag } from '../../ui/Tag';
+import { Tag } from '../Tag';
 import Color from '../../types/color.types';
 import { offset } from '../../utils/time';
 
+/**
+ * Props interface for the RunningEntry component
+ * Defines the properties needed to display a currently running time entry
+ */
 interface Props {
+  /** Name/title of the time entry */
   name: string;
+  /** Whether the entry has been synchronized with the server */
   synced: boolean;
+  /** Name of the associated tag/project */
   tag: string;
+  /** Start time of the entry in UTC seconds (Unix epoch) */
   startTimeUTC: number;
+  /** Time span representation (typically start time to "now") */
   timespan: string;
+  /** Color code associated with the tag */
   color: Color['color'];
+  /** Click handler for when the entry is selected */
   onClick: () => void;
+  /** Error message if synchronization failed */
   msg: string;
 }
 
+/**
+ * RunningEntry component displays a timer card for an active time tracking entry
+ * Features:
+ * - Real-time elapsed time counter that updates every second
+ * - Display of start time information
+ * - Tag indication with color coding
+ * - Sync status indicator
+ * - Error message display when sync fails
+ *
+ * This component is distinct from the regular Entry component because it
+ * actively updates to show the current elapsed time since the entry started.
+ */
 export const RunningEntry: React.FC<Props> = ({
   name,
   synced,
@@ -28,7 +52,11 @@ export const RunningEntry: React.FC<Props> = ({
   const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
 
   useEffect(() => {
-    // Function to format time as HH:MM:SS
+    /**
+     * Formats a time duration in seconds to a HH:MM:SS string format
+     * @param seconds - The number of seconds to format
+     * @returns Formatted time string in HH:MM:SS format with zero padding
+     */
     const formatTime = (seconds: number): string => {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
@@ -48,10 +76,12 @@ export const RunningEntry: React.FC<Props> = ({
       setElapsedTime(formatTime(elapsed));
     }, 1000);
 
+    // Initial calculation for immediate display
     const now = Math.floor(Date.now() / 1000);
     const elapsed = now - startTimeUTC;
     setElapsedTime(formatTime(elapsed));
 
+    // Clean up interval to prevent memory leaks
     return () => clearInterval(intervalId);
   }, [startTimeUTC]);
 
