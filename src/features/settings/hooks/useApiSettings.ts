@@ -1,16 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getToken,
   getUrl,
   updateToken,
   updateUrl,
   createToken,
-} from '../../database/index';
-import { SettingsSection, SHeadline } from '../../ui/layout/SettingsSection';
-import { Input } from '../../ui/inputs/Input';
-import { Button } from '../../ui/buttons/Button';
+} from '../../../database/index';
 
-const ApiSettings: React.FC = () => {
+/**
+ * Custom hook for managing API settings state and operations
+ *
+ * Provides functionality for:
+ * - Reading and writing API token and endpoint URL
+ * - Tracking changes between current and saved values
+ * - Generating new API tokens
+ * - Managing loading and error states
+ *
+ * @returns API settings state and handler functions
+ */
+export function useApiSettings() {
+  // Combined state for all API settings
   const [settings, setSettings] = useState({
     token: '',
     savedToken: '',
@@ -20,6 +29,9 @@ const ApiSettings: React.FC = () => {
     error: '',
   });
 
+  /**
+   * Updates the token input field
+   */
   const handleTokenChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSettings((prev) => ({ ...prev, token: e.target.value }));
@@ -27,6 +39,9 @@ const ApiSettings: React.FC = () => {
     [],
   );
 
+  /**
+   * Updates the URL input field
+   */
   const handleUrlChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSettings((prev) => ({ ...prev, url: e.target.value }));
@@ -34,6 +49,9 @@ const ApiSettings: React.FC = () => {
     [],
   );
 
+  /**
+   * Refreshes the token state from storage
+   */
   const updateTokenInState = useCallback(() => {
     const token = getToken();
     setSettings((prev) => ({
@@ -43,6 +61,9 @@ const ApiSettings: React.FC = () => {
     }));
   }, []);
 
+  /**
+   * Refreshes the URL state from storage
+   */
   const updateUrlInState = useCallback(() => {
     const url = getUrl();
     setSettings((prev) => ({
@@ -52,11 +73,17 @@ const ApiSettings: React.FC = () => {
     }));
   }, []);
 
+  /**
+   * Persists the current token value to storage
+   */
   const handleUpdateToken = useCallback(() => {
     updateToken(settings.token);
     updateTokenInState();
   }, [settings.token, updateTokenInState]);
 
+  /**
+   * Requests a new API token from the server
+   */
   const handleGenerateToken = useCallback(async () => {
     try {
       setSettings((prev) => ({
@@ -76,22 +103,29 @@ const ApiSettings: React.FC = () => {
     }
   }, [updateTokenInState]);
 
+  /**
+   * Persists the current URL value to storage
+   */
   const handleUpdateUrl = useCallback(() => {
     updateUrl(settings.url);
     updateUrlInState();
   }, [settings.url, updateUrlInState]);
 
-  // Load initial values
+  // Load initial values on component mount
   useEffect(() => {
     updateTokenInState();
     updateUrlInState();
   }, [updateTokenInState, updateUrlInState]);
 
+  // Derive UI state values from settings
   const { token, savedToken, url, savedUrl, isLoading, error } = settings;
   const hasTokenChanged = token !== savedToken;
   const hasUrlChanged = url !== savedUrl;
   const missingToken = !token;
 
+  /**
+   * Generates appropriate status message based on configuration state
+   */
   const statusMessage =
     !token && !url ?
       'You need to generate or input a token and define the API endpoint URL'
@@ -99,60 +133,19 @@ const ApiSettings: React.FC = () => {
     : !token ? 'You need to generate or input a token'
     : '';
 
-  return (
-    <SettingsSection headline="API">
-      <SHeadline>API Endpoint</SHeadline>
-      {statusMessage && <p className="text-sm">{statusMessage}</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <Input
-        type="url"
-        label="API URL"
-        id="url"
-        value={url}
-        onChange={handleUrlChange}
-        disabled={isLoading}
-      />
-
-      <Input
-        type="text"
-        id="token"
-        label="API Token"
-        value={token}
-        onChange={handleTokenChange}
-        disabled={isLoading}
-      />
-
-      {hasTokenChanged ?
-        <Button
-          uiType="secondary"
-          text="Update Token"
-          type="button"
-          onClick={handleUpdateToken}
-          disabled={isLoading}
-        />
-      : missingToken && (
-          <Button
-            uiType="secondary"
-            text="Generate Token"
-            type="button"
-            onClick={handleGenerateToken}
-            disabled={isLoading}
-          />
-        )
-      }
-
-      {hasUrlChanged ?
-        <Button
-          uiType="primary"
-          text="Update URL"
-          type="button"
-          onClick={handleUpdateUrl}
-          disabled={isLoading}
-        />
-      : ''}
-    </SettingsSection>
-  );
-};
-
-export default ApiSettings;
+  return {
+    token,
+    url,
+    isLoading,
+    error,
+    hasTokenChanged,
+    hasUrlChanged,
+    missingToken,
+    statusMessage,
+    handleTokenChange,
+    handleUrlChange,
+    handleUpdateToken,
+    handleGenerateToken,
+    handleUpdateUrl,
+  };
+}

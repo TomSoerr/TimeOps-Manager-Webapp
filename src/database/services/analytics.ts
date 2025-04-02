@@ -1,5 +1,5 @@
 import { getUrlToken } from '../utils/api-helpers';
-import { API_BASE_URL } from '../../vars';
+import { API_BASE_URL } from '../../constants/global';
 import { AnalyticsData } from '../schema';
 import { offset } from '../../utils/time';
 

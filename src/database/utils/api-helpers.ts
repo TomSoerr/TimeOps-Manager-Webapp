@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../vars';
+import { API_BASE_URL } from '../../constants/global';
 import { offset } from '../../utils/time';
 
 export interface UrlToken {

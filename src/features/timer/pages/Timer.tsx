@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useConnection } from '../context/ConnectionContext';
-import { Section } from '../ui/layout/Section.tsx';
-import { FabAdd } from '../ui/buttons/FabAdd.tsx';
-import { FabStart } from '../ui/buttons/FabStart.tsx';
-import { createEntry } from '../utils/entryToCard.tsx';
-import TimeEntry, { TimeRunningEntry } from '../types/database.types';
-import { Modal } from './Modal';
+import { useConnection } from '../../../context/ConnectionContext.tsx';
+import { Section } from '../../../ui/layout/Section.tsx';
+import { FabAdd } from '../../../ui/buttons/FabAdd.tsx';
+import { FabStart } from '../../../ui/buttons/FabStart.tsx';
+import { createEntry } from '../../../utils/entryToCard.tsx';
+import TimeEntry, { TimeRunningEntry } from '../../../types/database.types.ts';
+import { Modal } from '../../entries/EntryModal.tsx';
 import {
   TagEntry,
   getAllTags as getAllTag,
@@ -16,7 +16,7 @@ import {
   clearRunning,
   updateRemote,
   setRunning,
-} from '../database/index';
+} from '../../../database/index';
 import {
   sumUpHours,
   start,
@@ -27,14 +27,14 @@ import {
   dateToEpoch,
   SECONDS_PER_WEEK,
   Weekday,
-} from '../utils/time.ts';
+} from '../../../utils/time.ts';
 import {
   groupEntriesByInterval,
   GroupedEntries,
-} from '../utils/groupEntries.ts';
-import { FormData } from './Modal';
-import { ANIMATION_LENGTH } from '../vars.ts';
-import { RunningEntry } from '../ui/entries/RunningEntry.tsx';
+} from '../../../utils/groupEntries.ts';
+import { FormData } from '../../entries/types.ts';
+import { ANIMATION_LENGTH } from '../../../constants/global.ts';
+import { RunningEntry } from '../../../ui/entries/RunningEntry.tsx';
 
 const Timer: React.FC = () => {
   const { isOnline } = useConnection();
