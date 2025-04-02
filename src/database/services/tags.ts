@@ -1,7 +1,7 @@
 import { db } from '../db-instance';
 import { TagEntry } from '../schema';
 import { getUrlToken } from '../utils/api-helpers';
-import { API_BASE_URL } from '../../vars';
+import { API_BASE_URL } from '../../constants/global';
 import { updateLocal } from './sync';
 
 export async function getAllTags(): Promise<TagEntry[]> {

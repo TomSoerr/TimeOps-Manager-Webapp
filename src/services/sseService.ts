@@ -1,6 +1,6 @@
 import { getUrl, getToken } from '../database/index';
 import { EventSource } from 'eventsource';
-import { API_BASE_URL } from '../vars';
+import { API_BASE_URL } from '../constants/global';
 
 /**
  * This functions establishes a Server-Sent Events (SSE) to the api in order to

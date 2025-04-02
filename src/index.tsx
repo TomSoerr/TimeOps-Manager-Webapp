@@ -6,9 +6,9 @@ import { HashRouter, Routes, Route } from 'react-router';
 import ScrollToTop from './utils/ScrollToTop';
 import { ConnectionProvider } from './context/ConnectionContext';
 
-import Timer from './pages/Timer';
+import Timer from './features/timer/pages/Timer';
 import Analytics from './features/analytics/Analytics';
-import Settings from './pages/Settings';
+import Settings from './features/settings/pages/Settings';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
