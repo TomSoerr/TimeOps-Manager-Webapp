@@ -56,7 +56,6 @@ export const EntryForm: React.FC<EntryFormProps> = ({
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('localFormData', localFormData);
     onSubmit(e, localFormData);
   };
 

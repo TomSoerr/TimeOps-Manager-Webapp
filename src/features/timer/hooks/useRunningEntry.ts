@@ -46,10 +46,7 @@ function useRunningEntry(isOnline: boolean, loadEntries: () => Promise<void>) {
             startTimeUtc: Math.round(Date.now() / 1000) - 1, // -1 fix round err
             msg: '',
           });
-          console.warn('set running', runningEntry);
         } else {
-          console.warn('stop running');
-
           await setEntry({
             name: runningEntry.name,
             synced: runningEntry.synced ? 1 : 0,
