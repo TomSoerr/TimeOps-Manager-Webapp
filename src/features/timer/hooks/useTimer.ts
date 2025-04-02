@@ -41,7 +41,6 @@ const useTimer = (isOnline: boolean) => {
    * Updates local data from remote and loads all required data
    */
   const handleDataUpdate = useCallback(async () => {
-    console.info('Data updated, isOnline:', isOnline);
     setIsLoading(true);
 
     try {

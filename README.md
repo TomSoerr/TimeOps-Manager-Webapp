@@ -1,116 +1,95 @@
-# TimeOps-Manager-Webapp
+# TOC
 
-## TODO 
+- [TOC](#toc)
+- [Overview](#overview)
+- [Setup](#setup)
+  - [WSL](#wsl)
+    - [.wslconfig](#wslconfig)
+  - [HTTPS](#https)
+    - [Server-Side](#server-side)
+    - [Client-Side](#client-side)
+- [Screenshots](#screenshots)
 
-- Fix error not showing up after entry error
+# Overview
 
-- readme
 
 ```
-├── public
-│   ├── apple-touch-icon.png
-│   ├── desktop-screenshot.png
-│   ├── favicon-96x96.png
-│   ├── maks-icon.svg
-│   ├── mobile-screenshot.png
-│   ├── pwa-192x192.png
-│   └── pwa-512x512.png
-├── src
-│   ├── constants
-│   │   ├── global.ts
-│   │   └── tags.ts
-│   ├── context
-│   │   └── ConnectionContext.tsx
-│   ├── database
-│   │   ├── services
-│   │   │   ├── analytics.ts
-│   │   │   ├── entries.ts
-│   │   │   ├── running.ts
-│   │   │   ├── sync.ts
-│   │   │   └── tags.ts
-│   │   ├── utils
-│   │   │   └── api-helpers.ts
-│   │   ├── db-instance.ts
-│   │   ├── index.ts
-│   │   └── schema.ts
-│   ├── features
-│   │   ├── analytics
-│   │   │   └── Analytics.tsx
-│   │   ├── entries
-│   │   │   ├── EntryForm.tsx
-│   │   │   ├── EntryModal.tsx
-│   │   │   └── types.ts
-│   │   ├── settings
-│   │   │   ├── components
-│   │   │   │   ├── ApiSettings.tsx
-│   │   │   │   ├── DatabaseSettings.tsx
-│   │   │   │   └── TagSettings.tsx
-│   │   │   ├── hooks
-│   │   │   │   ├── useApiSettings.ts
-│   │   │   │   └── useDatabaseOperations.ts
-│   │   │   └── pages
-│   │   │       └── Settings.tsx
-│   │   ├── tags
-│   │   │   ├── EditTags.tsx
-│   │   │   └── TagForm.tsx
-│   │   └── timer
-│   │       ├── components
-│   │       │   ├── RunningEntrySection.tsx
-│   │       │   ├── TimerActionButtons.tsx
-│   │       │   └── WeeklyEntriesSection.tsx
-│   │       ├── hooks
-│   │       │   ├── useRunningEntry.ts
-│   │       │   ├── useTimerEntries.ts
-│   │       │   └── useTimer.ts
-│   │       └── pages
-│   │           ├── Timerrrrrr.tsx
-│   │           └── Timer.tsx
-│   ├── services
-│   │   └── sseService.ts
-│   ├── types
-│   │   ├── color.types.ts
-│   │   ├── database.types.ts
-│   │   └── tags.ts
-│   ├── ui
-│   │   ├── buttons
-│   │   │   ├── Button.tsx
-│   │   │   ├── FabAdd.tsx
-│   │   │   ├── FabStart.tsx
-│   │   │   └── FAB.tsx
-│   │   ├── entries
-│   │   │   ├── Entry.tsx
-│   │   │   └── RunningEntry.tsx
-│   │   ├── feedback
-│   │   │   └── Status.tsx
-│   │   ├── inputs
-│   │   │   ├── InputFile.tsx
-│   │   │   ├── Input.tsx
-│   │   │   └── Select.tsx
-│   │   ├── layout
-│   │   │   ├── Card.tsx
-│   │   │   ├── Section.tsx
-│   │   │   ├── SettingsSection.tsx
-│   │   │   └── Table.tsx
-│   │   ├── navigation
-│   │   │   ├── NavItem.tsx
-│   │   │   └── Nav.tsx
-│   │   ├── Icon.tsx
-│   │   └── Tag.tsx
-│   ├── utils
-│   │   ├── entryToCard.tsx
-│   │   ├── groupEntries.ts
-│   │   ├── ScrollToTop.tsx
-│   │   └── time.ts
-│   ├── index.css
-│   └── index.tsx
-├── eslint.config.js
-├── index.html
-├── package.json
-├── package-lock.json
-├── prettierrc.json
-├── README.md
-└── vite.config.ts
+├── public                             # Static assets served directly to client
+│   ├── apple-touch-icon.png           # Icon for iOS home screen
+│   ├── desktop-screenshot.png         # Screenshot for PWA install on desktop
+│   ├── favicon-96x96.png              # Browser favicon
+│   ├── maks-icon.svg                  # SVG icon for masks
+│   ├── mobile-screenshot.png          # Screenshot for PWA install on mobile
+│   ├── pwa-192x192.png                # Small PWA icon
+│   └── pwa-512x512.png                # Large PWA icon
+├── src                                # Application source code
+│   ├── constants                      # App-wide constant values
+│   │   ├── global.ts                  # Global application constants
+│   │   └── tags.ts                    # Tag-related constants
+│   ├── context                        # React context providers
+│   │   └── ConnectionContext.tsx      # Manages online/offline state
+│   ├── database                       # Database related code
+│   │   ├── services                   # Database CRUD operations
+│   │   │   ├── analytics.ts           # Analytics data queries
+│   │   │   ├── entries.ts             # Time entry operations
+│   │   │   ├── running.ts             # Currently running entry operations
+│   │   │   ├── sync.ts                # Data synchronization logic
+│   │   │   └── tags.ts                # Tag management operations
+│   │   ├── utils                      # Database utility functions
+│   │   │   └── api-helpers.ts         # API connection helpers
+│   │   ├── db-instance.ts             # Database instance initialization
+│   │   ├── index.ts                   # Database exports
+│   │   └── schema.ts                  # Database schema definitions
+│   ├── features                       # Feature modules
+│   │   ├── analytics                  # Analytics feature
+│   │   │   └── Analytics.tsx          # Analytics page component
+│   │   ├── entries                    # Time entries feature
+│   │   │   ├── EntryForm.tsx          # Form for creating/editing entries
+│   │   │   ├── EntryModal.tsx         # Modal dialog for entry form
+│   │   │   └── types.ts               # Entry-related type definitions
+│   │   ├── settings                   # Settings feature
+│   │   │   ├── components             # Settings UI components
+│   │   │   ├── hooks                  # Settings-related hooks
+│   │   │   └── pages                  # Settings pages
+│   │   ├── tags                       # Tag management feature
+│   │   │   ├── EditTags.tsx           # Tag editing component
+│   │   │   └── TagForm.tsx            # Form for creating/editing tags
+│   │   └── timer                      # Timer feature
+│   │       ├── components             # Timer UI components
+│   │       ├── hooks                  # Timer-related hooks
+│   │       └── pages                  # Timer pages
+│   ├── services                       # External services
+│   │   └── sseService.ts              # Server-sent events service
+│   ├── types                          # TypeScript type definitions
+│   │   ├── color.types.ts             # Color-related types
+│   │   ├── database.types.ts          # Database model types
+│   │   └── tags.ts                    # Tag-related types
+│   ├── ui                             # Reusable UI components
+│   │   ├── buttons                    # Button components
+│   │   ├── entries                    # Entry display components
+│   │   ├── feedback                   # User feedback components
+│   │   ├── inputs                     # Form input components
+│   │   ├── layout                     # Layout components
+│   │   ├── navigation                 # Navigation components
+│   │   ├── Icon.tsx                   # Icon component
+│   │   └── Tag.tsx                    # Tag display component
+│   ├── utils                          # Utility functions
+│   │   ├── entryToCard.tsx            # Converts entries to card components
+│   │   ├── groupEntries.ts            # Groups entries by time periods
+│   │   ├── ScrollToTop.tsx            # Scroll restoration component
+│   │   └── time.ts                    # Time manipulation utilities
+│   ├── index.css                      # Global CSS styles
+│   └── index.tsx                      # Application entry point
+├── eslint.config.js                   # ESLint configuration
+├── index.html                         # HTML entry point
+├── package.json                       # NPM dependencies and scripts
+├── package-lock.json                  # Locked NPM dependencies
+├── prettierrc.json                    # Prettier code formatter config
+├── README.md                          # Project documentation
+└── vite.config.ts                     # Vite bundler configuration
 ```
+
+# Setup
 
 ## WSL
 
@@ -145,29 +124,53 @@ dhcp=true
 
 ## HTTPS
 
-```sh
-# Create cert inside project folder
-mkcert -install
-mkcert 192.168.178.43
+### Server-Side
 
-# Folder where rootCA.pem is
+```sh
+# 1. Install mkcert if not already installed
+# On Ubuntu/Debian:
+# sudo apt install mkcert
+
+# 2. Create certificates inside project folder
+mkcert -install
+mkcert 192.168.178.43  # Use your server's IP address
+
+# 3. Find the location of your root CA certificate
 mkcert -CAROOT
 
-# Convert to CRT for Android and Windows
+# 4. Convert certificate to CRT format (for Android and Windows clients)
 openssl x509 -in "192.168.178.43.pem" -out rootCA.crt
 
-# Add cert on Windows (run as Admin)
+```
+
+### Client-Side
+
+```sh
+# 1. Copy the certificate files from WSL to Windows if needed
+# Example: \\wsl$\Ubuntu\path\to\project\192.168.178.43.pem
+
+# 2. Add certificate to Windows trust store (run as Administrator)
 certutil -addstore -f "ROOT" "192.168.178.43.pem"
 
-# List current port proxy
+# 3. Configure port forwarding for the application
+
+# List current port proxy settings
 netsh interface portproxy show all
 
-# Remove old port proxy
+# Remove any conflicting port proxy settings
 netsh interface portproxy delete v4tov4 listenport=5173 listenaddress=0.0.0.0
 
-# Add new port proxy
+# Add new port proxy settings
 netsh interface portproxy add v4tov4 listenport=5173 listenaddress=0.0.0.0 connectport=5173 connectaddress=192.168.178.43
 
+# For API server port
 netsh interface portproxy add v4tov4 listenport=3000 listenaddress=0.0.0.0 connectport=3000 connectaddress=192.168.178.43
-
 ```
+
+# Screenshots
+
+![](./media/timer.png)
+![](./media/popup.png)
+![](./media/settings.png)
+![](./media/weeks.png)
+![](./media/tags.png)
