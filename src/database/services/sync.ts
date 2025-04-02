@@ -106,6 +106,8 @@ export async function updateLocal(): Promise<void> {
       if (currentRunningEntry && !runningEntryFromApi) {
         await db.running.delete('current');
       }
+
+      console.log(entriesFromApi);
     });
   } catch (error) {
     console.error('Error updating local database:', error);
@@ -264,7 +266,9 @@ export async function updateRemote(): Promise<boolean> {
         );
       }
 
-      atLeastOneSync = true;
+      if ((await response.json())?.count !== 0) {
+        atLeastOneSync = true;
+      }
     }
   } catch (error) {
     console.error('Error updating remote database:', error);
