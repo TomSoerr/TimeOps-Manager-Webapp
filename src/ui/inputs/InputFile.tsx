@@ -57,7 +57,6 @@ export const InputFile: React.FC<Props> = ({ onSubmit, msg }) => {
 
   return (
     <>
-      <p className="text-red-500 text-xs">{msg}</p>
       <div className="flex flex-col space-y-2">
         <input
           type="file"

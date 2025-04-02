@@ -14,7 +14,7 @@ interface Props {
   /** Function to update form data state */
   setFormData: (data: FormData) => void;
   /** Handler for form submission */
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (updatedData: FormData) => void;
   /** Handler for closing the modal */
   onClose: () => void;
   /** Available tags for selection in the form */
@@ -33,7 +33,7 @@ interface Props {
  * Uses the HTML Popover API for modern modal behavior with proper
  * animations for opening and closing.
  */
-export const Modal: React.FC<Props> = ({
+export const EntryModal: React.FC<Props> = ({
   formData,
   setFormData,
   onSubmit,
@@ -85,8 +85,8 @@ export const Modal: React.FC<Props> = ({
    * Updates parent formData and triggers onSubmit
    */
   const handleFormSubmit = (e: React.FormEvent, updatedData: FormData) => {
-    setFormData(updatedData);
-    onSubmit(e);
+    e.preventDefault();
+    onSubmit(updatedData);
   };
 
   return (

@@ -3,6 +3,7 @@ import { Entry } from '../schema';
 import TimeEntry from '../../types/database.types';
 
 export async function setEntry(entry: Entry): Promise<void> {
+  console.log(entry);
   if (entry.id === undefined) {
     await db.entries.add({
       name: entry.name,

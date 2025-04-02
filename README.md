@@ -3,8 +3,114 @@
 ## TODO 
 
 - Fix error not showing up after entry error
-- scrollbar settings
+
 - readme
+
+```
+├── public
+│   ├── apple-touch-icon.png
+│   ├── desktop-screenshot.png
+│   ├── favicon-96x96.png
+│   ├── maks-icon.svg
+│   ├── mobile-screenshot.png
+│   ├── pwa-192x192.png
+│   └── pwa-512x512.png
+├── src
+│   ├── constants
+│   │   ├── global.ts
+│   │   └── tags.ts
+│   ├── context
+│   │   └── ConnectionContext.tsx
+│   ├── database
+│   │   ├── services
+│   │   │   ├── analytics.ts
+│   │   │   ├── entries.ts
+│   │   │   ├── running.ts
+│   │   │   ├── sync.ts
+│   │   │   └── tags.ts
+│   │   ├── utils
+│   │   │   └── api-helpers.ts
+│   │   ├── db-instance.ts
+│   │   ├── index.ts
+│   │   └── schema.ts
+│   ├── features
+│   │   ├── analytics
+│   │   │   └── Analytics.tsx
+│   │   ├── entries
+│   │   │   ├── EntryForm.tsx
+│   │   │   ├── EntryModal.tsx
+│   │   │   └── types.ts
+│   │   ├── settings
+│   │   │   ├── components
+│   │   │   │   ├── ApiSettings.tsx
+│   │   │   │   ├── DatabaseSettings.tsx
+│   │   │   │   └── TagSettings.tsx
+│   │   │   ├── hooks
+│   │   │   │   ├── useApiSettings.ts
+│   │   │   │   └── useDatabaseOperations.ts
+│   │   │   └── pages
+│   │   │       └── Settings.tsx
+│   │   ├── tags
+│   │   │   ├── EditTags.tsx
+│   │   │   └── TagForm.tsx
+│   │   └── timer
+│   │       ├── components
+│   │       │   ├── RunningEntrySection.tsx
+│   │       │   ├── TimerActionButtons.tsx
+│   │       │   └── WeeklyEntriesSection.tsx
+│   │       ├── hooks
+│   │       │   ├── useRunningEntry.ts
+│   │       │   ├── useTimerEntries.ts
+│   │       │   └── useTimer.ts
+│   │       └── pages
+│   │           ├── Timerrrrrr.tsx
+│   │           └── Timer.tsx
+│   ├── services
+│   │   └── sseService.ts
+│   ├── types
+│   │   ├── color.types.ts
+│   │   ├── database.types.ts
+│   │   └── tags.ts
+│   ├── ui
+│   │   ├── buttons
+│   │   │   ├── Button.tsx
+│   │   │   ├── FabAdd.tsx
+│   │   │   ├── FabStart.tsx
+│   │   │   └── FAB.tsx
+│   │   ├── entries
+│   │   │   ├── Entry.tsx
+│   │   │   └── RunningEntry.tsx
+│   │   ├── feedback
+│   │   │   └── Status.tsx
+│   │   ├── inputs
+│   │   │   ├── InputFile.tsx
+│   │   │   ├── Input.tsx
+│   │   │   └── Select.tsx
+│   │   ├── layout
+│   │   │   ├── Card.tsx
+│   │   │   ├── Section.tsx
+│   │   │   ├── SettingsSection.tsx
+│   │   │   └── Table.tsx
+│   │   ├── navigation
+│   │   │   ├── NavItem.tsx
+│   │   │   └── Nav.tsx
+│   │   ├── Icon.tsx
+│   │   └── Tag.tsx
+│   ├── utils
+│   │   ├── entryToCard.tsx
+│   │   ├── groupEntries.ts
+│   │   ├── ScrollToTop.tsx
+│   │   └── time.ts
+│   ├── index.css
+│   └── index.tsx
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── prettierrc.json
+├── README.md
+└── vite.config.ts
+```
 
 ## WSL
 
