@@ -1,0 +1,9 @@
+node_modules
+**/*.crt
+**/*.key
+**/*.pem
+**/*.csr
+**/*.p12
+dev-dist
+dist
+.env
