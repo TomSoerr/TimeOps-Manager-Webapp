@@ -5,7 +5,6 @@ import { API_BASE_URL } from '../../constants/global';
 import { offset } from '../../utils/time';
 
 export async function updateLocal(): Promise<void> {
-  console.warn('update local');
   const { url, token } = getUrlToken();
 
   try {
@@ -114,8 +113,6 @@ export async function updateLocal(): Promise<void> {
 }
 
 export async function updateRemote(): Promise<boolean> {
-  console.warn('Update remote called');
-
   const { url, token } = getUrlToken();
   let unsyncableChange: boolean = false;
   let atLeastOneSync: boolean = false;
