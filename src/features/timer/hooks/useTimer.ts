@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { initializeDefaultEntry } from '../../../database/index';
+
 import { FormData } from '../../entries/types.ts';
 import TimeEntry, { TimeRunningEntry } from '../../../types/database.types.ts';
 import {
@@ -47,6 +49,9 @@ const useTimer = (isOnline: boolean) => {
       if (isOnline) {
         await updateLocal();
       }
+
+      // Initialize default entry if the database is empty
+      await initializeDefaultEntry();
 
       // Load data in parallel for better performance
       await Promise.all([loadTags(), loadEntries(), loadRunning()]);

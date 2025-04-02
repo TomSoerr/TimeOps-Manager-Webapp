@@ -34,7 +34,8 @@ export default defineConfig({
         launch_handler: {
           client_mode: ['navigate-existing', 'auto'],
         },
-        start_url: '/',
+        // start_url: '/',
+        start_url: '/TimeOps-Manager-Webapp/',
         id: '/',
         scope: '/',
         screenshots: [
@@ -53,12 +54,12 @@ export default defineConfig({
         ],
         icons: [
           {
-            src: '/pwa-192x192.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -75,15 +76,16 @@ export default defineConfig({
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
   },
-  base: '/',
+  // base: '/',
+  base: '/TimeOps-Manager-Webapp/',
   server: {
     host: '0.0.0.0',
     port: 5173,
 
-    https: {
-      key: fs.readFileSync('192.168.178.43-key.pem'),
-      cert: fs.readFileSync('192.168.178.43.pem'),
-    },
+    // https: {
+    //   key: fs.readFileSync('192.168.178.43-key.pem'),
+    //   cert: fs.readFileSync('192.168.178.43.pem'),
+    // },
   },
   build: {
     outDir: 'dist',
