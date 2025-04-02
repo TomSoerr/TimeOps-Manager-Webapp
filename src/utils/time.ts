@@ -40,7 +40,7 @@ export const epochToHHMM = (epoch: number): string => {
 };
 
 export const epochToYYMMDD = (epoch: number): string => {
-  const date = new Date(epoch * 1000);
+  const date = new Date(epoch * 1000 - offset * 1000);
   return date.toISOString().split('T')[0];
 };
 

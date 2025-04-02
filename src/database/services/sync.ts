@@ -106,8 +106,6 @@ export async function updateLocal(): Promise<void> {
       if (currentRunningEntry && !runningEntryFromApi) {
         await db.running.delete('current');
       }
-
-      console.log(entriesFromApi);
     });
   } catch (error) {
     console.error('Error updating local database:', error);
@@ -319,7 +317,6 @@ export async function importFile(file: File): Promise<void> {
       },
       body: formData,
     });
-    console.info('importFile', response);
 
     if (!response.ok) {
       throw new Error(`Failed to import file: ${response.statusText}`);
